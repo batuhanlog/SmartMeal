@@ -1,4 +1,4 @@
-# Takım Bilgileri (ana başlığı içe sokmalı ok yap yine solda)
+# Takım Bilgileri 
 
 ## Takım İsmi / Ürün İsmi  
 **Yapay Zeka78 / SMART MEAL**
@@ -13,7 +13,7 @@
 ## Product Backlog URL  
 https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a28f231160FD36EDE6/smart-meal
 
-# Ürün Bilgileri (ana başlığı içe sokmalı ok yap yine solda)
+# Ürün Bilgileri 
 
 ## Ürün Açıklaması
 
@@ -105,7 +105,7 @@ Tüm sayfalar arasında hızlı ve sezgisel geçiş için Flutter navigasyon sis
 
 
 
-# Hedef Kullanıcılar(ana başlığı içe sokmalı ok yap yine solda)
+# Hedef Kullanıcılar
 
 **SmartMeal** uygulaması, farklı yaş gruplarından ve yaşam tarzlarından bireylere hitap eden, sağlık odaklı bir çözüm sunar.  
 Hem bireysel hem de toplu kullanımda fayda sağlayabilecek kapsamlı bir yapıya sahiptir.
