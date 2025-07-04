@@ -15,7 +15,8 @@ https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a
 
 # Ürün Bilgileri 
 
-## Ürün Açıklaması
+<details open>
+<summary><strong>Ürün Açıklaması</strong></summary>
 
 Günümüzde beslenme, kişisel sağlık yönetiminin temel taşlarından biri haline gelmiştir. Ancak insanlar, ellerindeki malzemelerle sağlıklı ve dengeli bir öğün hazırlamakta, ya da yediklerinin kendi sağlık verilerine uygun olup olmadığını anlamakta zorlanmaktadır.
 
@@ -27,9 +28,10 @@ Ayrıca kullanıcı, sadece elindeki malzemeleri yazarak ya da seçerek, sistemi
 
 Minimalist ve kullanıcı dostu tasarımı ile SmartMeal, kişisel sağlıkla uyumlu bir yaşam tarzı benimsemek isteyen herkes için hem pratik bir asistan hem de motive edici bir rehber olmayı hedefler.
 
+</details>
 ---
-
-## Ürün Özellikleri
+<details>
+<summary><strong>Ürün Özellikleri</strong></summary>
 
 ### 1. Giriş Sayfası: Profil Bazlı Kişiselleştirme
 
@@ -92,7 +94,7 @@ Kullanıcı elindeki malzemeleri metinle ya da butonlarla girer. Sistem, bu malz
 - Favorilere ekleme/çıkarma  
 - Filtreleme ve yeniden erişim kolaylığı  
 
-#### Ana Sayfa ve Navigasyon
+#### Navigasyon
 
 Ana sayfada modüller:
 
@@ -104,8 +106,13 @@ Ana sayfada modüller:
 Tüm sayfalar arasında hızlı ve sezgisel geçiş için Flutter navigasyon sistemi kullanılmıştır.
 
 
+</details>
 
+---- 
 # Hedef Kullanıcılar
+
+<details open>
+<summary><strong>Kullanıcı Grupları</strong></summary>
 
 **SmartMeal** uygulaması, farklı yaş gruplarından ve yaşam tarzlarından bireylere hitap eden, sağlık odaklı bir çözüm sunar.  
 Hem bireysel hem de toplu kullanımda fayda sağlayabilecek kapsamlı bir yapıya sahiptir.
@@ -157,6 +164,7 @@ Beslenme tercihi doğrultusunda tüm tarifler filtrelenir.
 **Tarif Uyarlamaları**  
 Tariflerdeki içerikler diyete göre otomatik olarak uyarlanır.
 
+</details>
 
 # 📍 SPRINT 1
 
