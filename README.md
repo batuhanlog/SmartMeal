@@ -175,13 +175,12 @@ NutriMuse projesi toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje
 Daily Scrum toplantıları, ekip üyelerinin okul ve iş yoğunlukları göz önünde bulundurularak Google Meet üzerinden çevrim içi olarak gerçekleştirilmiştir. Her toplantı sonrasında günlük görev durumları ve ilerlemeler, ekip içi kayıt amacıyla WhatsApp üzerinden yazılı olarak paylaşılmıştır.  
 Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli dokümanlar eklenmiştir.
 
-### 🗨️ Sprint 1 – WhatsApp & Google Meet Toplantı Kayıtları
-
+### 🗨️ Sprint 1 – WhatsApp & Google Meet Toplantı Kayıtları  
 📎 Toplantı ekran görüntüleri ve yazışmalar için:  
 👉 [WhatsApp Görsellerine Buradan Ulaşabilirsiniz](https://drive.google.com/drive/folders/1MRBDttWCSHXecd63y1qjKrfANuVOTHiz?usp=drive_link)
 
-<details>
-  
+</details>
+
 <details>
 <summary><strong>▶ Sprint Board Updates</strong></summary>
 
@@ -190,8 +189,8 @@ Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları a
 
 <img width="1402" alt="Ekran Resmi 2025-07-04 23 00 36" src="https://github.com/user-attachments/assets/21e9cc6f-0a55-452b-92b8-1d5fe908d501" />
 
-<details>
-  
+</details>
+
 <details>
 <summary><strong>▶ Sprint Katılımcıları</strong></summary>
 
@@ -234,21 +233,16 @@ Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları a
 
 Ürün görüntüleri aşağıda sunulmuştur:
 
-
-![WhatsApp Image 2025-07-03 at 18 17 31](https://github.com/user-attachments/assets/e95f88ab-bdaf-457f-b3a6-3f24920a1230)
-![WhatsApp Image 2025-07-03 at 18 17 32](https://github.com/user-attachments/assets/16e7f634-3840-4ec5-9b13-20b807f9eeab)
-![WhatsApp Image 2025-07-03 at 18 17 33](https://github.com/user-attachments/assets/49f12705-314c-41aa-bbfa-12d4149d5c26)
-![WhatsApp Image 2025-07-03 at 18 17 34](https://github.com/user-attachments/assets/6e96561e-8754-4be1-942d-d04a4c63125d)
-![WhatsApp Image 2025-07-03 at 18 17 34 (1)](https://github.com/user-attachments/assets/b34caf55-bbf2-48ce-8718-c635b6f352e6)
-![WhatsApp Image 2025-07-03 at 18 17 35](https://github.com/user-attachments/assets/75c0ca1e-bed9-4e62-99a8-4ad5d2565220)
-![WhatsApp Image 2025-07-04 at 21 55 59](https://github.com/user-attachments/assets/d0798221-c57a-4d5d-a03c-f3b046120f1b)
+![WhatsApp Image 2025-07-03 at 18 17 31](https://github.com/user-attachments/assets/e95f88ab-bdaf-457f-b3a6-3f24920a1230)  
+![WhatsApp Image 2025-07-03 at 18 17 32](https://github.com/user-attachments/assets/16e7f634-3840-4ec5-9b13-20b807f9eeab)  
+![WhatsApp Image 2025-07-03 at 18 17 33](https://github.com/user-attachments/assets/49f12705-314c-41aa-bbfa-12d4149d5c26)  
+![WhatsApp Image 2025-07-03 at 18 17 34](https://github.com/user-attachments/assets/6e96561e-8754-4be1-942d-d04a4c63125d)  
+![WhatsApp Image 2025-07-03 at 18 17 34 (1)](https://github.com/user-attachments/assets/b34caf55-bbf2-48ce-8718-c635b6f352e6)  
+![WhatsApp Image 2025-07-03 at 18 17 35](https://github.com/user-attachments/assets/75c0ca1e-bed9-4e62-99a8-4ad5d2565220)  
+![WhatsApp Image 2025-07-04 at 21 55 59](https://github.com/user-attachments/assets/d0798221-c57a-4d5d-a03c-f3b046120f1b)  
 ![WhatsApp Image 2025-07-04 at 21 55 59 (1)](https://github.com/user-attachments/assets/65226543-372d-421b-86a3-b8cef33a02b8)
 
-
-<details>
-
-
-
+</details>
 
 <details>
 <summary><strong>▶ Sprint Retrospective</strong></summary>
@@ -273,6 +267,3 @@ Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları a
 - “En İyi Katkı” sticker’ı uygulaması başlatılacak  
 
 </details>
-
-
-
