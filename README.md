@@ -214,18 +214,21 @@ Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli 
 <details>
 <summary><strong>▶ Ürün Durumu</strong></summary>
 
-Ekran görüntüleri aşağıda sunulmuştur:
+Ürün görüntüleri aşağıda sunulmuştur:
 
-- Ana Sayfa  
-- Giriş Ekranı  
-- Kayıt Ekranı  
-- Profil Oluşturma  
-- Bugün Ne Yesem  
-- Tarif Detayı  
-- Elimdeki Malzemeler  
-- Fotoğraflı Analiz Ekranı  
 
-(Dosyalar Readme’ye eklenmiştir.)
+![WhatsApp Image 2025-07-03 at 18 17 31](https://github.com/user-attachments/assets/e95f88ab-bdaf-457f-b3a6-3f24920a1230)
+![WhatsApp Image 2025-07-03 at 18 17 32](https://github.com/user-attachments/assets/16e7f634-3840-4ec5-9b13-20b807f9eeab)
+![WhatsApp Image 2025-07-03 at 18 17 33](https://github.com/user-attachments/assets/49f12705-314c-41aa-bbfa-12d4149d5c26)
+![WhatsApp Image 2025-07-03 at 18 17 34](https://github.com/user-attachments/assets/6e96561e-8754-4be1-942d-d04a4c63125d)
+![WhatsApp Image 2025-07-03 at 18 17 34 (1)](https://github.com/user-attachments/assets/b34caf55-bbf2-48ce-8718-c635b6f352e6)
+![WhatsApp Image 2025-07-03 at 18 17 35](https://github.com/user-attachments/assets/75c0ca1e-bed9-4e62-99a8-4ad5d2565220)
+![WhatsApp Image 2025-07-04 at 21 55 59](https://github.com/user-attachments/assets/d0798221-c57a-4d5d-a03c-f3b046120f1b)
+![WhatsApp Image 2025-07-04 at 21 55 59 (1)](https://github.com/user-attachments/assets/65226543-372d-421b-86a3-b8cef33a02b8)
+
+
+</details>
+
 
 </details>
 
