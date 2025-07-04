@@ -1,3 +1,4 @@
+<details>
 <summary><strong>📁 Takım Bilgileri</strong></summary>
 
 ## Takım İsmi / Ürün İsmi  
@@ -11,8 +12,13 @@
 - **Selimhan Gitmişoğlu** – Developer _(aktif)_
 
 ## Product Backlog URL  
-https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a28f231160FD36EDE6/smart-meal
+🔗 [Trello Board - SmartMeal](https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a28f231160FD36EDE6/smart-meal)
 
+</details>
+
+---
+
+<details>
 <summary><strong>📁 Ürün Bilgileri</strong></summary>
 
 ## Ürün Açıklaması
@@ -32,131 +38,58 @@ Minimalist ve kullanıcı dostu tasarımı ile SmartMeal, kişisel sağlıkla uy
 ## Ürün Özellikleri
 
 ### 1. Giriş Sayfası: Profil Bazlı Kişiselleştirme
+- Vücut kitle indeksi (BMI) hesaplaması  
+- Kalori ve makro ihtiyaç belirleme  
+- Diyet etiketi oluşturma (ketojenik, vegan vb.)
 
-Kullanıcılar yaş, cinsiyet, boy, kilo, aktivite seviyesi, diyet tercihi, alerjiler ve sağlık hedefleri gibi bilgileri içeren detaylı bir profil oluşturur. Uygulama bu bilgiler doğrultusunda:
+### 2. Kişiselleştirilmiş Yemek Önerileri
+- Kalori ve makro bilgileri  
+- Hazırlama süresi ve tarif neden uygun açıklamaları  
+- Gemini 2.0 ile içerik oluşturma
 
-- Vücut kitle indeksi (BMI) hesaplaması yapar  
-- Hedef doğrultusunda kalori ve makro besin ihtiyaçlarını belirler  
-- Diyet etiketlerini oluşturur (ör. ketojenik, vegan, düşük karbonhidrat vs.)
+### 3. AI ile Görsel Yemek Analizi
+- Görüntü tanıma ve besin tahmini  
+- Kullanıcıya özel sağlık değerlendirmesi
 
----
-
-### 2. Kişiselleştirilmiş Yemek Önerileri Sayfası
-
-Uygulama, kullanıcı profilindeki bilgilerle **Gemini 2.0** kullanarak öneriler üretir. Her yemek önerisi:
-
-- Toplam kalori, protein, karbonhidrat, yağ miktarı  
-- Hazırlama süresi ve zorluk seviyesi  
-- Tarifin neden uygun olduğu bilgisi  
-- Gereken tüm malzemeler ve hazırlanış adımları içerir
-
-Sistem, alerji ya da diyet dışı içerikleri filtreleyerek kişiye özel ve güvenli öneriler sunar.
-
----
-
-### 3. AI ile Görsel Yemek Analizi Sayfası
-
-Kullanıcı, yediği yemeğin fotoğrafını yükleyerek besin içerik analizi alabilir. Özellik demo aşamasında statik eşleştirme mantığıyla çalışır:
-
-- Görsel alımı (kamera veya galeri)  
-- Görüntü sınıflandırması  
-- Kalori ve makro tahmini  
-- Kullanıcıya özel uygunluk değerlendirmesi
-
-Bu ekran, AI’nın temel besin tanıma gücünü deneyimletmeyi hedefler.
-
----
-
-### 4. Elimdekiler ile Tarifler Sayfası
-
-Kullanıcı elindeki malzemeleri metinle ya da butonlarla girer. Sistem, bu malzemelere göre Gemini ile tarif önerisi sunar:
-
-- Eksik malzeme durumunda uyarı verir  
-- Hazırlanabilirlik derecesini belirtir  
-- Gerekli ek malzemeleri sıralar
-
----
+### 4. Elimdekiler ile Tarifler
+- Malzeme girişi  
+- Gemini ile tarif oluşturma  
+- Eksik malzeme önerisi
 
 ### 5. Ek Özellikler
+- Tarif detayları ve hazırlanışı  
+- Favori tarif geçmişi  
+- Ana sayfa navigasyonu (Flutter)
 
-#### Tarif Detayları
+</details>
 
-- Kalori, protein, karbonhidrat, yağ gibi temel besin değerleri  
-- Malzeme listesi ve ölçüleri  
-- Adım adım hazırlanış yönergeleri  
-- Kullanıcıya uygunluk açıklaması  
+---
 
-#### Geçmiş Takibi
-
-- Daha önce görüntülenen tariflerin otomatik saklanması  
-- Favorilere ekleme/çıkarma  
-- Filtreleme ve yeniden erişim kolaylığı  
-
-#### Ana Sayfa ve Navigasyon
-
-Ana sayfada modüller:
-
-- Kişisel yemek önerisi  
-- Elimdeki malzemelerle tarif  
-- Yemeği analiz et  
-- Profil ve sağlık bilgileri
-
-Tüm sayfalar arasında hızlı ve sezgisel geçiş için Flutter navigasyon sistemi kullanılmıştır.
-
-
-
+<details>
 <summary><strong>📁 Hedef Kullanıcılar</strong></summary>
 
+### 1. Öğrenciler
+- Sınav dönemlerinde sağlıklı seçim desteği  
+- Elde malzeme ile ekonomik tarif önerileri
 
-**SmartMeal** uygulaması, farklı yaş gruplarından ve yaşam tarzlarından bireylere hitap eden, sağlık odaklı bir çözüm sunar.  
-Hem bireysel hem de toplu kullanımda fayda sağlayabilecek kapsamlı bir yapıya sahiptir.
+### 2. Çalışan Profesyoneller
+- Hızlı, zaman kazandıran menüler  
+- Diyet verisi takibi
 
----
+### 3. Alerji-Duyarlılık Sahipleri
+- Özel filtreleme sistemi  
+- İçerik güvenliği
 
-## 1. Öğrenciler
+### 4. Sporcular
+- Hedef bazlı tarif önerisi  
+- Protein/karbonhidrat dengesi
 
-**Sağlıklı Yaşam Bilinci**  
-Yoğun sınav dönemlerinde düzensiz beslenme riskine karşı, öğrencilere pratik ve dengeli yemek önerileri sunar.
+### 5. Diyet Tipi Takipçileri
+- Vegan, ketojenik, glütensiz uyarlamalar  
+- Tarif içeriği otomatik dönüşümü
 
-**Bütçe Dostu & Pratik Çözümler**  
-Elde mevcut malzemelerle yapılabilecek tarif önerileriyle ekonomik çözümler sağlar.
+</details>
 
----
-
-## 2. Çalışan Profesyoneller
-
-**Zaman Yönetimi ve Hızlı Seçimler**  
-Yoğun iş temposunda sağlıklı tercihler yapma süresini kısaltır, önerileriyle karar verme sürecini kolaylaştırır.
-
-**Diyet Takibi ve Raporlama**  
-Kilo kontrolü veya özel sağlık hedefleri olan bireylerin beslenme verilerini anlamlandırmasına yardımcı olur.
-
----
-
-## 3. Belirli Gıdalara Hassasiyeti Olan Bireyler
-
-**Alerji ve Duyarlılık Desteği**  
-Gluten, laktoz, fıstık gibi hassasiyetlere özel filtreleme ve öneri sistemi sunar.
-
----
-
-## 4. Sporcular ve Aktif Yaşam Tarzına Sahip Kullanıcılar
-
-**Makro Takibi ve Hedef Odaklı Beslenme**  
-Kas yapma, kilo alma veya yağ kaybı hedefleri doğrultusunda dengelenmiş tariflerle destek sağlar.
-
-**Yüksek Proteinli / Düşük Karbonhidratlı Alternatifler**  
-Kişisel hedeflere uygun tarif segmentasyonu içerir.
-
----
-
-## 5. Farklı Diyet Tiplerini Takip Eden Bireyler
-
-**Diyet Tipine Uygun Öneriler**  
-Beslenme tercihi doğrultusunda tüm tarifler filtrelenir.
-
-**Tarif Uyarlamaları**  
-Tariflerdeki içerikler diyete göre otomatik olarak uyarlanır.
 
 # 📍 SPRINT 1
 
