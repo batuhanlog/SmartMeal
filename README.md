@@ -172,6 +172,11 @@ NutriMuse projesi toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje
 Daily Scrum toplantıları, ekip üyelerinin okul ve iş yoğunlukları göz önünde bulundurularak Google Meet üzerinden çevrim içi olarak gerçekleştirilmiştir. Her toplantı sonrasında günlük görev durumları ve ilerlemeler, ekip içi kayıt amacıyla WhatsApp üzerinden yazılı olarak paylaşılmıştır.  
 Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli dokümanlar .jpeg formatında eklenmiştir.
 
+### 🗨️ Sprint 1 – WhatsApp & Google Meet Toplantı Kayıtları
+
+📎 Toplantı ekran görüntüleri ve yazışmalar için:  
+👉 [WhatsApp Görsellerine Buradan Ulaşabilirsiniz](https://drive.google.com/drive/folders/1MRBDttWCSHXecd63y1qjKrfANuVOTHiz?usp=drive_link)
+
 </details>
 
 <details>
