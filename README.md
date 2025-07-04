@@ -11,7 +11,7 @@
 - **Selimhan Gitmişoğlu** – Developer _(aktif)_
 
 ## Product Backlog URL  
-(https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a28f231160FD36EDE6/smart-meal)
+https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a28f231160FD36EDE6/smart-meal
 
 # Ürün Bilgileri
 
