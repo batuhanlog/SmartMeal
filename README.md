@@ -160,7 +160,7 @@ Tariflerdeki içerikler diyete göre otomatik olarak uyarlanır.
 # 📍 SPRINT 1
 
 <details>
-<summary><strong>▶ Sprint Planı</strong></summary>
+<summary><strong> Sprint Planı</strong></summary>
 
 **Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
 
@@ -170,7 +170,7 @@ NutriMuse projesi toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje
 </details>
 
 <details>
-<summary><strong>▶ Daily Scrum</strong></summary>
+<summary><strong> Daily Scrum</strong></summary>
 
 Daily Scrum toplantıları, ekip üyelerinin okul ve iş yoğunlukları göz önünde bulundurularak Google Meet üzerinden çevrim içi olarak gerçekleştirilmiştir. Her toplantı sonrasında günlük görev durumları ve ilerlemeler, ekip içi kayıt amacıyla WhatsApp üzerinden yazılı olarak paylaşılmıştır.  
 Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli dokümanlar eklenmiştir.
@@ -182,7 +182,7 @@ Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli 
 </details>
 
 <details>
-<summary><strong>▶ Sprint Board Updates</strong></summary>
+<summary><strong> Sprint Board Updates</strong></summary>
 
 Trello kullanılarak hazırlanmış sprint planına aşağıdaki görselden ulaşabilirsiniz.  
 Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları altında düzenlenmiştir.
@@ -192,7 +192,7 @@ Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları a
 </details>
 
 <details>
-<summary><strong>▶ Sprint Katılımcıları</strong></summary>
+<summary><strong> Sprint Katılımcıları</strong></summary>
 
 - Batuhan Kayahan – Product Owner  
 - Gökçe Beyza Gökçek – Scrum Master  
@@ -203,7 +203,7 @@ Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları a
 </details>
 
 <details>
-<summary><strong>▶ Sprint Review</strong></summary>
+<summary><strong> Sprint Review</strong></summary>
 
 - Proje fikri belirlendi: Yapay zekâ destekli kişisel beslenme öneri uygulaması olarak karar verildi  
 - Uygulama kapsamı, hedef kullanıcılar ve temel modüller tanımlandı  
@@ -229,7 +229,7 @@ Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları a
 </details>
 
 <details>
-<summary><strong>▶ Ürün Durumu</strong></summary>
+<summary><strong> Ürün Durumu</strong></summary>
 
 Ürün görüntüleri aşağıda sunulmuştur:
 
@@ -245,7 +245,7 @@ Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları a
 </details>
 
 <details>
-<summary><strong>▶ Sprint Retrospective</strong></summary>
+<summary><strong> Sprint Retrospective</strong></summary>
 
 **Neler İyi Gitti?**
 - Kararları birlikte verdik, neyi nasıl daha iyi yaparız odağı ön plandaydı  
