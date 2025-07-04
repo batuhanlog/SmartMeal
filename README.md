@@ -101,3 +101,157 @@ Ana sayfada modüller:
 Tüm sayfalar arasında hızlı ve sezgisel geçiş için Flutter navigasyon sistemi kullanılmıştır.
 
 
+
+# Hedef Kullanıcılar
+
+**SmartMeal** uygulaması, farklı yaş gruplarından ve yaşam tarzlarından bireylere hitap eden, sağlık odaklı bir çözüm sunar.  
+Hem bireysel hem de toplu kullanımda fayda sağlayabilecek kapsamlı bir yapıya sahiptir.
+
+---
+
+## 1. Öğrenciler
+
+**Sağlıklı Yaşam Bilinci**  
+Yoğun sınav dönemlerinde düzensiz beslenme riskine karşı, öğrencilere pratik ve dengeli yemek önerileri sunar.
+
+**Bütçe Dostu & Pratik Çözümler**  
+Elde mevcut malzemelerle yapılabilecek tarif önerileriyle ekonomik çözümler sağlar.
+
+---
+
+## 2. Çalışan Profesyoneller
+
+**Zaman Yönetimi ve Hızlı Seçimler**  
+Yoğun iş temposunda sağlıklı tercihler yapma süresini kısaltır, önerileriyle karar verme sürecini kolaylaştırır.
+
+**Diyet Takibi ve Raporlama**  
+Kilo kontrolü veya özel sağlık hedefleri olan bireylerin beslenme verilerini anlamlandırmasına yardımcı olur.
+
+---
+
+## 3. Belirli Gıdalara Hassasiyeti Olan Bireyler
+
+**Alerji ve Duyarlılık Desteği**  
+Gluten, laktoz, fıstık gibi hassasiyetlere özel filtreleme ve öneri sistemi sunar.
+
+---
+
+## 4. Sporcular ve Aktif Yaşam Tarzına Sahip Kullanıcılar
+
+**Makro Takibi ve Hedef Odaklı Beslenme**  
+Kas yapma, kilo alma veya yağ kaybı hedefleri doğrultusunda dengelenmiş tariflerle destek sağlar.
+
+**Yüksek Proteinli / Düşük Karbonhidratlı Alternatifler**  
+Kişisel hedeflere uygun tarif segmentasyonu içerir.
+
+---
+
+## 5. Farklı Diyet Tiplerini Takip Eden Bireyler
+
+**Diyet Tipine Uygun Öneriler**  
+Beslenme tercihi doğrultusunda tüm tarifler filtrelenir.
+
+**Tarif Uyarlamaları**  
+Tariflerdeki içerikler diyete göre otomatik olarak uyarlanır.
+
+# 📍 SPRINT 1
+
+<details>
+<summary><strong>▶ Sprint Planı</strong></summary>
+
+**Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
+
+**Puan tamamlama mantığı:**  
+NutriMuse projesi toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 1’de temel altyapı, kullanıcı girişi, profil oluşturma, veri bağlantıları ve navigasyon sistemleri geliştirildiği için bu sprintin yükü 100 puan olarak belirlenmiştir.
+
+</details>
+
+<details>
+<summary><strong>▶ Daily Scrum</strong></summary>
+
+Daily Scrum toplantıları, ekip üyelerinin okul ve iş yoğunlukları göz önünde bulundurularak Google Meet üzerinden çevrim içi olarak gerçekleştirilmiştir. Her toplantı sonrasında günlük görev durumları ve ilerlemeler, ekip içi kayıt amacıyla WhatsApp üzerinden yazılı olarak paylaşılmıştır.  
+Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli dokümanlar .jpeg formatında eklenmiştir.
+
+</details>
+
+<details>
+<summary><strong>▶ Sprint Katılımcıları</strong></summary>
+
+- Batuhan Kayahan – Product Owner  
+- Gökçe Beyza Gökçek – Scrum Master  
+- Emine Suna Yılmaz – Developer  
+- Hasan Kılınç – Developer  
+- Selimhan Gitmişoğlu – Developer  
+
+</details>
+
+<details>
+<summary><strong>▶ Sprint Review</strong></summary>
+
+- Proje fikri belirlendi: Yapay zekâ destekli kişisel beslenme öneri uygulaması olarak karar verildi  
+- Uygulama kapsamı, hedef kullanıcılar ve temel modüller tanımlandı  
+- Geliştirme teknolojileri seçildi: Flutter, Firebase, Gemini API  
+- GitHub repository oluşturuldu ve temel proje yapısı kuruldu  
+- Flutter projesi başlatıldı ve klasör yapısı oluşturuldu  
+- Firebase Auth entegrasyonu tamamlandı  
+- Google ile giriş ve e-posta/şifre kayıt ekranları geliştirildi  
+- Giriş sonrası yönlendirme akışı tamamlandı  
+- Kullanıcı profil oluşturma formu geliştirildi (diyet tipi, hedef, yaş, kilo, alerjiler vb.)  
+- Profil formunun Firebase’e veri yazma işlemi başarıyla tamamlandı  
+- Ana menü ve alt navigasyon sistemi geliştirildi  
+- Ana menüde 3 sekme tanımlandı: “Bugün Ne Yesem?”, “Yemeği Analiz Et”, “Elimdeki Malzemelerle Tarif”  
+- “Bugün Ne Yesem?” sayfası dummy içerikle geliştirildi  
+- Öneri detay sayfası oluşturuldu  
+- Kullanıcı profil özet kartı entegre edildi  
+- “Elimdeki Malzemelerle Tarif” sayfasının arayüzü tamamlandı  
+- “Yemeği Fotoğrafla Analiz Et” sayfasının arayüzü tamamlandı  
+- Sayfalar arası geçiş ve navigasyonlar tamamlandı  
+- UI/UX düzenlemeleri yapıldı  
+- Test kullanıcılarıyla Firestore veri akışı test edildi  
+
+</details>
+
+<details>
+<summary><strong>▶ Ürün Durumu</strong></summary>
+
+Ekran görüntüleri aşağıda sunulmuştur:
+
+- Ana Sayfa  
+- Giriş Ekranı  
+- Kayıt Ekranı  
+- Profil Oluşturma  
+- Bugün Ne Yesem  
+- Tarif Detayı  
+- Elimdeki Malzemeler  
+- Fotoğraflı Analiz Ekranı  
+
+(Dosyalar Readme’ye eklenmiştir.)
+
+</details>
+
+<details>
+<summary><strong>▶ Sprint Retrospective</strong></summary>
+
+**Neler İyi Gitti?**
+- Kararları birlikte verdik, neyi nasıl daha iyi yaparız odağı ön plandaydı  
+- Ekip içi motivasyon yüksekti, destekleyici ve paylaşımcı bir yapı oluştu  
+- Akşam buluşmaları odaklı ve verimliydi (Meet + WhatsApp)  
+- Daily/weekly Scrum yapısı sürdürüldü  
+- UI/UX’e erken odaklanmak görsel bütünlüğü sağladı  
+
+**Zorlanılan Noktalar**
+- Flutter kurulum sürecinde teknik sorunlar yaşandı  
+- Zaman zaman çevrim içi olamama nedeniyle iletişim aksadı  
+- WhatsApp mesaj trafiği bazı günler yoğunlaştı  
+- Firebase auth entegrasyonunda teknik engeller çıktı  
+
+**Aldığımız Kararlar**
+- Her sprint için sabit haftalık toplantı günü belirlendi  
+- WhatsApp mesajları Trello ile desteklenerek sadeleştirilecek  
+- Mini retrospektifler düzenli hale getirilecek  
+- “En İyi Katkı” sticker’ı uygulaması başlatılacak  
+
+</details>
+
+
+
