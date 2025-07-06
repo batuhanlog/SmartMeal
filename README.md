@@ -12,6 +12,8 @@
 
 ## Product Backlog URL  
 TRELLO ->   https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a28f231160FD36EDE6/smart-meal
+
+
 EXCEL SPREADSHEET ->  https://docs.google.com/spreadsheets/d/1oJFwlWX4NKyk2JQHONkodrRFCN9Rr_mQ/edit?usp=sharing&ouid=104963067556918109812&rtpof=true&sd=true
 
 # Ürün Bilgileri 
