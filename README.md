@@ -231,11 +231,15 @@ Trello üzerinde oluşturulan sprint planı, proje yönetimini görsel ve işlev
 - “Bugün Ne Yesem?” sayfası dummy içerikle geliştirildi  
 - Öneri detay sayfası oluşturuldu  
 - Kullanıcı profil özet kartı entegre edildi  
-- “Elimdeki Malzemelerle Tarif” sayfasının arayüzü tamamlandı  
+- “Elimdeki Malzemelerle Tarif” sayfasının arayüzü tamamlandı
 - “Yemeği Fotoğrafla Analiz Et” sayfasının arayüzü tamamlandı  
 - Sayfalar arası geçiş ve navigasyonlar tamamlandı  
 - UI/UX düzenlemeleri yapıldı  
-- Test kullanıcılarıyla Firestore veri akışı test edildi  
+- Test kullanıcılarıyla Firestore veri akışı test edildi
+
+Burndown chart aşağıda verilmiştir: 
+ ![output](https://github.com/user-attachments/assets/67e18acf-afaa-4dbc-9b86-05ea27f3c3ed)
+
 
 </details>
 
