@@ -238,7 +238,8 @@ Trello üzerinde oluşturulan sprint planı, proje yönetimini görsel ve işlev
 - Test kullanıcılarıyla Firestore veri akışı test edildi
 
 Burndown chart aşağıda verilmiştir: 
- ![output](https://github.com/user-attachments/assets/67e18acf-afaa-4dbc-9b86-05ea27f3c3ed)
+
+![output (1)](https://github.com/user-attachments/assets/427f1e70-d89e-406d-9aa0-2df6db199471)
 
 
 </details>
