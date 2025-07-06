@@ -174,7 +174,7 @@ Tariflerdeki içerikler diyete göre otomatik olarak uyarlanır.
 **Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
 
 **Puan tamamlama mantığı:**  
-NutriMuse projesi toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 1’de temel altyapı, kullanıcı girişi, profil oluşturma, veri bağlantıları ve navigasyon sistemleri geliştirildiği için bu sprintin yükü 100 puan olarak belirlenmiştir.
+SMART MEAL toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 1’de temel altyapı, kullanıcı girişi, profil oluşturma, veri bağlantıları ve navigasyon sistemleri geliştirildiği için bu sprintin yükü 100 puan olarak belirlenmiştir. Her bir sprintte eşit bir ağırlıklandırmanın iş bölümü açısından adil olacağına karar verilmiştir.
 
 </details>
 
