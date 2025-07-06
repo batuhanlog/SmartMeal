@@ -193,10 +193,9 @@ Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli 
 <details>
 <summary><strong> Sprint Board Updates</strong></summary>
 
-Trello kullanılarak hazırlanmış sprint planına aşağıdaki görselden ulaşabilirsiniz.  
-Sprint görev dağılımı; **To Do**, **In Progress** ve **Done** sütunları altında düzenlenmiştir.
+Trello üzerinde oluşturulan sprint planı, proje yönetimini görsel ve işlevsel olarak takip etmeye olanak tanımaktadır. Görevler, To Do (Yapılacaklar), In Progress (Devam Edenler), Done (Tamamlananlar) ve Gelecek Süreçler olmak üzere dört temel sütun altında kategorize edilmiştir. Bu yapı sayesinde, görevler sadece frontend/backend olarak teknik ayrımlarla değil, uygulamanın genel işlevselliğine göre dağıtılmıştır. Her kart, bireysel sorumlulara atanmış ve ekip içi ilerlemeyi şeffaf şekilde yansıtacak şekilde yapılandırılmıştır. Henüz planlanmamış ama ileriki sprintlerde yapılması planlanan işler ise “Gelecek Süreçler” sütununda toplanarak proje vizyonunun devamlılığı güvence altına alınmıştır. Bu sistem, ekip içinde iş takibini kolaylaştırmak ve sprint verimliliğini artırmak amacıyla kullanılmıştır.
 
-<img width="1402" alt="Ekran Resmi 2025-07-04 23 00 36" src="https://github.com/user-attachments/assets/21e9cc6f-0a55-452b-92b8-1d5fe908d501" />
+<img width="1145" alt="Ekran Resmi 2025-07-06 15 21 41" src="https://github.com/user-attachments/assets/32fe0854-1689-4afb-85bf-7324b224e69d" />
 
 </details>
 
