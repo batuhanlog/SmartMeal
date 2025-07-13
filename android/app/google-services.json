@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "382371099664",
+    "project_id": "yemek-asistani-506c9",
+    "storage_bucket": "yemek-asistani-506c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:382371099664:android:6e997253cc0ad9f4208695",
+        "android_client_info": {
+          "package_name": "com.example.project_x"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "382371099664-fphu0vdnlee1hsp56u3jlf4hlqe4ok16.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.project_x",
+            "certificate_hash": "8c1209fca65320b9aacac77c1abe62ee61a40989"
+          }
+        },
+        {
+          "client_id": "382371099664-3li9c9mto5scru196troqu03ps2limin.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYjKKQMnU4lZjVfcdF_hBWnoBvvNtFTSI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "382371099664-3li9c9mto5scru196troqu03ps2limin.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "382371099664-cptscalvi77a82ki2l40phqva25hjep8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.projectx"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
