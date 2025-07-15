@@ -6,10 +6,7 @@
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
-            "args": [
-                "--flavor",
-                "development"
-            ]
+            
         },
         {
             "name": "Release Flutter App",

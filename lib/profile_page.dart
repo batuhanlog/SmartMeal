@@ -203,7 +203,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${bmi.toStringAsFixed(1)}',
+                        bmi.toStringAsFixed(1),
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,

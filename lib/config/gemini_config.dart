@@ -1,6 +1,4 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'dart:typed_data';
-import 'dart:convert';
 
 class GeminiService {
   // TODO: Bu API anahtarını güvenli bir şekilde saklayın (environment variables)

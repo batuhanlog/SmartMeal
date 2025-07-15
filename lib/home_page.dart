@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
     _loadUserProfile();
   }
 
+  // --- DÜZELTİLMİŞ FONKSİYON ---
   Future<void> _loadUserProfile() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -37,7 +38,8 @@ class _HomePageState extends State<HomePage> {
             .doc(user.uid)
             .get();
         
-        if (doc.exists) {
+        // setState çağırmadan önce widget'ın hala ekranda olduğunu (mounted) kontrol et.
+        if (mounted && doc.exists) {
           setState(() {
             userProfile = doc.data();
             isLoading = false;
@@ -45,9 +47,12 @@ class _HomePageState extends State<HomePage> {
         }
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      // Hata durumunda da aynı kontrolü yap.
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

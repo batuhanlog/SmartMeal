@@ -211,7 +211,7 @@ class _AuthPageState extends State<AuthPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    const Text('Beslenme Tercihleri:', style: TextStyle(fontSize: 16)),
+                    const Text('Beslenme Türü/Tercihleri:', style: TextStyle(fontSize: 16)),
                     ...dietTypes.map((type) {
                       return CheckboxListTile(
                         title: Text(type),
@@ -260,13 +260,13 @@ class _AuthPageState extends State<AuthPage> {
                   ],
                 ),
               
-              // Alerji seçimi 
+              // Alerjiler bölümü (Aynen kalıyor)
               if (!isLogin)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    const Text('Alerjileriniz (Varsa seçin):', style: TextStyle(fontSize: 16)),
+                    const Text('Alerjileriniz (varsa seçin):', style: TextStyle(fontSize: 16)),
                     ...tumAlerjenler.map((String tekBirAlerjen) {
                       return CheckboxListTile(
                         title: Text(tekBirAlerjen),
