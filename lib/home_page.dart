@@ -10,6 +10,8 @@ import 'auth_page.dart';
 import 'profile_page.dart';
 import 'meal_history_page.dart';
 import 'settings_page.dart';
+import 'water_tracking_page.dart';
+import 'step_counter_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -353,6 +355,57 @@ class _HomePageState extends State<HomePage> {
                   
                   const SizedBox(height: 16),
                   
+                  // Sağlık Takibi Başlığı
+                  Text(
+                    '💪 Sağlık Takibi',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Su Tüketimi ve Adım Sayar Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildHealthButton(
+                          icon: Icons.water_drop,
+                          title: 'Su Takibi',
+                          subtitle: 'Günlük su tüketimi',
+                          color: Colors.blue,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const WaterTrackingPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildHealthButton(
+                          icon: Icons.directions_walk,
+                          title: 'Adım Sayar',
+                          subtitle: 'Günlük aktivite',
+                          color: Colors.green,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const StepCounterPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
                   // Yemek Geçmişi Butonu
                   _buildMenuButton(
                     icon: Icons.history,
@@ -460,6 +513,62 @@ class _HomePageState extends State<HomePage> {
                 Icons.arrow_forward_ios,
                 color: Colors.grey.shade400,
                 size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHealthButton({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
