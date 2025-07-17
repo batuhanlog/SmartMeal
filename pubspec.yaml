@@ -77,10 +77,10 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.jpeg"
+  image_path: "assets/images/icon.png"
   min_sdk_android: 21 # Android 5.0
   adaptive_icon_background: "#4CAF50"
-  adaptive_icon_foreground: "assets/images/logo.jpeg"
+  adaptive_icon_foreground: "assets/images/icon.png"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
