@@ -18,14 +18,52 @@ class _ProfilePageState extends State<ProfilePage> {
   final _heightController = TextEditingController();
   final _allergiesController = TextEditingController();
 
+  // Beslenme ve alerji seçimleri
+  List<String> secilenDiyetTurleri = [];
+  List<String> secilenAlerjiler = [];
+  
+  // Açılır/kapanır bölümler için kontroller
+  bool isDietSectionExpanded = false;
+  bool isAllergySectionExpanded = false;
+  
+  // Emoji'li beslenme türü listesi
+  final Map<String, String> dietTypesWithEmojis = {
+    'Dengeli': '⚖️',
+    'Vegan': '🌱',
+    'Vejetaryen': '🥗',
+    'Ketojenik': '🥑',
+    'Akdeniz Diyeti': '🫒',
+    'Yüksek Protein': '🥩',
+    'Düşük Karbonhidrat': '🥬',
+    'Şekersiz': '🚫',
+    'Karnivor': '🥩',
+  };
+  
+  // Emoji'li alerji listesi
+  final Map<String, String> allergiesWithEmojis = {
+    'Gluten': '🌾',
+    'Laktoz': '🥛',
+    'Yumurta': '🥚',
+    'Soya': '🫘',
+    'Fıstık': '🥜',
+    'Ceviz, Badem vb. (Ağaç Kuruyemişleri)': '🌰',
+    'Deniz Ürünleri (Balık, Kabuklular)': '🐟',
+    'Hardal': '🟡',
+    'Susam': '🌻',
+  };
+  
+  // "Diğer" seçenekleri için kontroller
+  bool digerDiyetTuruSecili = false;
+  bool digerAlerjiSecili = false;
+  final _digerDiyetTuruController = TextEditingController();
+  final _digerAlerjiController = TextEditingController();
+
   String _gender = 'Erkek';
-  String _dietType = 'Dengeli';
   String _activityLevel = 'Orta';
   bool _isLoading = true;
   bool _isSaving = false;
 
   final List<String> _genderOptions = ['Erkek', 'Kadın', 'Belirtmek istemiyorum'];
-  final List<String> _dietTypes = ['Dengeli', 'Vegan', 'Vejetaryen', 'Ketojenik', 'Glutensiz', 'Mediteran'];
   final List<String> _activityLevels = ['Düşük', 'Orta', 'Yüksek', 'Çok Yüksek'];
 
   @override
@@ -41,6 +79,8 @@ class _ProfilePageState extends State<ProfilePage> {
     _weightController.dispose();
     _heightController.dispose();
     _allergiesController.dispose();
+    _digerDiyetTuruController.dispose();
+    _digerAlerjiController.dispose();
     super.dispose();
   }
 
@@ -60,10 +100,27 @@ class _ProfilePageState extends State<ProfilePage> {
             _ageController.text = (data['age'] ?? '').toString();
             _weightController.text = (data['weight'] ?? '').toString();
             _heightController.text = (data['height'] ?? '').toString();
-            _allergiesController.text = data['allergies'] ?? '';
             _gender = data['gender'] ?? 'Erkek';
-            _dietType = data['dietType'] ?? 'Dengeli';
             _activityLevel = data['activityLevel'] ?? 'Orta';
+            
+            // Beslenme türlerini yükle
+            if (data['dietTypes'] != null) {
+              secilenDiyetTurleri = List<String>.from(data['dietTypes']);
+            } else if (data['dietType'] != null) {
+              // Eski tek seçim formatından yeni çoklu seçim formatına geçiş
+              secilenDiyetTurleri = [data['dietType']];
+            }
+            
+            // Alerjileri yükle
+            if (data['allergies'] != null) {
+              if (data['allergies'] is List) {
+                secilenAlerjiler = List<String>.from(data['allergies']);
+              } else {
+                // Eski string formatından yeni liste formatına geçiş
+                _allergiesController.text = data['allergies'];
+              }
+            }
+            
             _isLoading = false;
           });
         }
@@ -88,6 +145,14 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        // "Diğer" seçenekleri için kontroller
+        if (digerDiyetTuruSecili && _digerDiyetTuruController.text.isNotEmpty) {
+          secilenDiyetTurleri.add(_digerDiyetTuruController.text);
+        }
+        if (digerAlerjiSecili && _digerAlerjiController.text.isNotEmpty) {
+          secilenAlerjiler.add(_digerAlerjiController.text);
+        }
+        
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -96,9 +161,9 @@ class _ProfilePageState extends State<ProfilePage> {
           'age': int.tryParse(_ageController.text) ?? 0,
           'weight': double.tryParse(_weightController.text) ?? 0,
           'height': double.tryParse(_heightController.text) ?? 0,
-          'allergies': _allergiesController.text,
           'gender': _gender,
-          'dietType': _dietType,
+          'dietTypes': secilenDiyetTurleri,
+          'allergies': secilenAlerjiler,
           'activityLevel': _activityLevel,
           'updatedAt': FieldValue.serverTimestamp(),
         });
@@ -333,37 +398,230 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 16),
 
-            // Beslenme Tercihleri
+            // Modern Beslenme Tercihleri
             _buildSectionCard(
               title: '🥗 Beslenme Tercihleri',
               children: [
-                DropdownButtonFormField<String>(
-                  value: _dietType,
-                  decoration: const InputDecoration(
-                    labelText: 'Beslenme Türü',
-                    prefixIcon: Icon(Icons.restaurant),
+                Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.restaurant_menu, color: Colors.green),
+                        title: const Text('🍽️ Beslenme Tercihleri'),
+                        subtitle: secilenDiyetTurleri.isEmpty 
+                            ? const Text('Tercihlerinizi seçin')
+                            : Text('${secilenDiyetTurleri.length} seçenek seçildi'),
+                        trailing: Icon(isDietSectionExpanded ? Icons.expand_less : Icons.expand_more),
+                        onTap: () {
+                          setState(() {
+                            isDietSectionExpanded = !isDietSectionExpanded;
+                          });
+                        },
+                      ),
+                      if (isDietSectionExpanded)
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Beslenme türlerinizi seçin:', 
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 8),
+                              ...dietTypesWithEmojis.entries.map((entry) {
+                                final type = entry.key;
+                                final emoji = entry.value;
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: secilenDiyetTurleri.contains(type) 
+                                        ? Colors.green.withOpacity(0.1)
+                                        : Colors.grey.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: CheckboxListTile(
+                                    title: Row(
+                                      children: [
+                                        Text(emoji, style: const TextStyle(fontSize: 18)),
+                                        const SizedBox(width: 8),
+                                        Text(type),
+                                      ],
+                                    ),
+                                    value: secilenDiyetTurleri.contains(type),
+                                    dense: true,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                    onChanged: (bool? isChecked) {
+                                      setState(() {
+                                        if (isChecked == true) {
+                                          secilenDiyetTurleri.add(type);
+                                        } else {
+                                          secilenDiyetTurleri.remove(type);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                );
+                              }),
+                              const SizedBox(height: 8),
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: digerDiyetTuruSecili 
+                                      ? Colors.orange.withOpacity(0.1)
+                                      : Colors.grey.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: CheckboxListTile(
+                                  title: const Row(
+                                    children: [
+                                      Text('✏️', style: TextStyle(fontSize: 18)),
+                                      SizedBox(width: 8),
+                                      Text('Diğer'),
+                                    ],
+                                  ),
+                                  value: digerDiyetTuruSecili,
+                                  dense: true,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                  onChanged: (bool? isChecked) {
+                                    setState(() {
+                                      digerDiyetTuruSecili = isChecked ?? false;
+                                    });
+                                  },
+                                ),
+                              ),
+                              if (digerDiyetTuruSecili)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: TextFormField(
+                                    controller: _digerDiyetTuruController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Lütfen belirtin',
+                                      border: OutlineInputBorder(),
+                                      isDense: true,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
-                  items: _dietTypes.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _dietType = value!;
-                    });
-                  },
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _allergiesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Alerjiler (isteğe bağlı)',
-                    prefixIcon: Icon(Icons.warning),
-                    hintText: 'Örn: Fıstık, süt ürünleri...',
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Modern Alerjiler
+            _buildSectionCard(
+              title: '⚠️ Alerjiler',
+              children: [
+                Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.warning, color: Colors.orange),
+                        title: const Text('⚠️ Alerjileriniz'),
+                        subtitle: secilenAlerjiler.isEmpty 
+                            ? const Text('Varsa seçin (isteğe bağlı)')
+                            : Text('${secilenAlerjiler.length} alerji seçildi'),
+                        trailing: Icon(isAllergySectionExpanded ? Icons.expand_less : Icons.expand_more),
+                        onTap: () {
+                          setState(() {
+                            isAllergySectionExpanded = !isAllergySectionExpanded;
+                          });
+                        },
+                      ),
+                      if (isAllergySectionExpanded)
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Alerjilerinizi seçin:', 
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 8),
+                              ...allergiesWithEmojis.entries.map((entry) {
+                                final allergen = entry.key;
+                                final emoji = entry.value;
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: secilenAlerjiler.contains(allergen) 
+                                        ? Colors.orange.withOpacity(0.1)
+                                        : Colors.grey.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: CheckboxListTile(
+                                    title: Row(
+                                      children: [
+                                        Text(emoji, style: const TextStyle(fontSize: 18)),
+                                        const SizedBox(width: 8),
+                                        Expanded(child: Text(allergen)),
+                                      ],
+                                    ),
+                                    value: secilenAlerjiler.contains(allergen),
+                                    dense: true,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                    onChanged: (bool? isChecked) {
+                                      setState(() {
+                                        if (isChecked == true) {
+                                          secilenAlerjiler.add(allergen);
+                                        } else {
+                                          secilenAlerjiler.remove(allergen);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                );
+                              }),
+                              const SizedBox(height: 8),
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: digerAlerjiSecili 
+                                      ? Colors.red.withOpacity(0.1)
+                                      : Colors.grey.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: CheckboxListTile(
+                                  title: const Row(
+                                    children: [
+                                      Text('✏️', style: TextStyle(fontSize: 18)),
+                                      SizedBox(width: 8),
+                                      Text('Diğer'),
+                                    ],
+                                  ),
+                                  value: digerAlerjiSecili,
+                                  dense: true,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                  onChanged: (bool? isChecked) {
+                                    setState(() {
+                                      digerAlerjiSecili = isChecked ?? false;
+                                    });
+                                  },
+                                ),
+                              ),
+                              if (digerAlerjiSecili)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: TextFormField(
+                                    controller: _digerAlerjiController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Lütfen belirtin',
+                                      border: OutlineInputBorder(),
+                                      isDense: true,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
-                  maxLines: 2,
                 ),
               ],
             ),
