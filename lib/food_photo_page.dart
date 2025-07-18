@@ -12,6 +12,11 @@ class FoodPhotoPage extends StatefulWidget {
 }
 
 class _FoodPhotoPageState extends State<FoodPhotoPage> {
+  // --- YENİ RENK PALETİ ---
+  final Color primaryColor = Colors.green.shade800;
+  final Color secondaryColor = Colors.green.shade600;
+  final Color backgroundColor = Colors.grey.shade100;
+
   File? _imageFile;
   bool _isAnalyzing = false;
   Map<String, dynamic>? _analysisResult;
@@ -19,12 +24,9 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
   final GeminiService _geminiService = GeminiService();
 
   Future<void> _takePhoto() async {
+    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
-      final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 80,
-      );
-      
+      final XFile? photo = await _picker.pickImage(source: ImageSource.camera, imageQuality: 80);
       if (photo != null) {
         setState(() {
           _imageFile = File(photo.path);
@@ -33,23 +35,15 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Fotoğraf çekme hatası: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fotoğraf çekme hatası: $e'), backgroundColor: Colors.red));
       }
     }
   }
 
   Future<void> _pickFromGallery() async {
+    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
-      
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
       if (image != null) {
         setState(() {
           _imageFile = File(image.path);
@@ -58,31 +52,20 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Galeri erişim hatası: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Galeri erişim hatası: $e'), backgroundColor: Colors.red));
       }
     }
   }
 
   Future<void> _analyzeFood() async {
+    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     if (_imageFile == null) return;
-
-    setState(() {
-      _isAnalyzing = true;
-    });
-
+    setState(() => _isAnalyzing = true);
     try {
-      // Read image as bytes for Gemini API
       final Uint8List imageBytes = await _imageFile!.readAsBytes();
-      
-      // Call Gemini AI service for food analysis
       final result = await _geminiService.analyzeFoodPhoto(imageBytes);
-
-      setState(() {
+      if(mounted) {
+        setState(() {
         _analysisResult = {
           'foodName': result['food_name'] ?? 'Bilinmeyen Yemek',
           'calories': result['calories'] ?? 0,
@@ -96,21 +79,16 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
         };
         _isAnalyzing = false;
       });
+      }
     } catch (e) {
-      setState(() {
-        _isAnalyzing = false;
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Analiz hatası: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      if(mounted){
+        setState(() => _isAnalyzing = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Analiz hatası: $e'), backgroundColor: Colors.red));
       }
     }
   }
+
+  // --- YARDIMCI FONKSİYONLAR SINIF İÇİNE ALINDI VE RENKLER GÜNCELLENDİ ---
 
   Widget _buildAnalysisResult() {
     if (_analysisResult == null) return const SizedBox.shrink();
@@ -121,116 +99,68 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
 
     return Card(
       margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    result['foodName'],
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text(result['foodName'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getHealthColor(healthScore),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Sağlık: $healthScore/10',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  decoration: BoxDecoration(color: _getHealthColor(healthScore), borderRadius: BorderRadius.circular(20)),
+                  child: Text('Sağlık: $healthScore/10', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              'Güven: ${(confidence * 100).toInt()}%',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
-            ),
+            Text('Güven: ${(confidence * 100).toInt()}%', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
             const SizedBox(height: 16),
             
-            // AI Analysis
             if (result['analysis'] != null && result['analysis'].isNotEmpty) ...[
-              Text(
-                'AI Analizi',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.blue.shade700,
-                ),
-              ),
+              Text('AI Analizi', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: primaryColor)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade200),
+                  border: Border.all(color: Colors.green.shade200),
                 ),
-                child: Text(
-                  result['analysis'],
-                  style: const TextStyle(fontSize: 14),
-                ),
+                child: Text(result['analysis'], style: const TextStyle(fontSize: 14)),
               ),
               const SizedBox(height: 16),
             ],
             
-            // Besin değerleri
-            Text(
-              'Besin Değerleri',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Besin Değerleri', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNutritionInfo('Kalori', '${result['calories']}', Icons.local_fire_department, Colors.orange),
-                _buildNutritionInfo('Protein', result['protein'], Icons.fitness_center, Colors.red),
-                _buildNutritionInfo('Karbonhidrat', result['carbs'], Icons.grain, Colors.brown),
-                _buildNutritionInfo('Yağ', result['fat'], Icons.opacity, Colors.yellow.shade700),
+                _buildNutritionInfo('Kalori', '${result['calories']}', Icons.local_fire_department, Colors.orange.shade600),
+                _buildNutritionInfo('Protein', result['protein'], Icons.fitness_center, Colors.blue.shade600),
+                _buildNutritionInfo('Karbonhidrat', result['carbs'], Icons.grain, Colors.brown.shade500),
+                _buildNutritionInfo('Yağ', result['fat'], Icons.opacity, Colors.amber.shade600),
               ],
             ),
             const SizedBox(height: 16),
             
-            // Öneriler
-            Text(
-              'Beslenme Önerileri',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.green.shade700,
-              ),
-            ),
+            Text('Beslenme Önerileri', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: primaryColor)),
             const SizedBox(height: 8),
-            ...((result['recommendations'] as List<String>).map((rec) => 
+            ...((result['recommendations'] as List<dynamic>).cast<String>().map((rec) => 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.lightbulb_outline,
-                      size: 18,
-                      color: Colors.amber.shade700,
-                    ),
+                    Icon(Icons.lightbulb_outline, size: 18, color: Colors.amber.shade700),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        rec,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
+                    Expanded(child: Text(rec, style: const TextStyle(fontSize: 14))),
                   ],
                 ),
               ),
@@ -238,39 +168,30 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
             
             const SizedBox(height: 16),
             
-            // Action Buttons
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _imageFile = null;
-                        _analysisResult = null;
-                      });
-                    },
+                    onPressed: () => setState(() {
+                      _imageFile = null;
+                      _analysisResult = null;
+                    }),
                     icon: const Icon(Icons.refresh),
                     label: const Text('Yeni Analiz'),
+                    style: OutlinedButton.styleFrom(foregroundColor: primaryColor, side: BorderSide(color: primaryColor)),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Save to history or favorites
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Analiz kaydedildi!'),
-                          backgroundColor: Colors.green,
-                        ),
+                        SnackBar(content: const Text('Analiz kaydedildi!'), backgroundColor: secondaryColor),
                       );
                     },
                     icon: const Icon(Icons.save),
                     label: const Text('Kaydet'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: secondaryColor, foregroundColor: Colors.white),
                   ),
                 ),
               ],
@@ -286,83 +207,55 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
       children: [
         Icon(icon, color: color, size: 24),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
       ],
     );
   }
 
   Color _getHealthColor(int score) {
-    if (score >= 8) return Colors.green;
-    if (score >= 6) return Colors.orange;
-    return Colors.red;
+    if (score >= 8) return Colors.green.shade600;
+    if (score >= 6) return Colors.orange.shade600;
+    return Colors.red.shade600;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Yemek Analizi',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.indigo,
+        title: const Text('Yemek Analizi'),
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        elevation: 0,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header Card
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.indigo, Colors.indigo.shade300],
+                  colors: [primaryColor, secondaryColor],
                 ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.camera_enhance,
-                      size: 48,
-                      color: Colors.white,
-                    ),
+                    const Icon(Icons.camera_enhance, size: 48, color: Colors.white),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       '🤖 AI ile Yemek Analizi',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Yemeğinizin fotoğrafını çekin, besin değerlerini ve sağlık puanını öğrenin!',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
+                      'Yemeğinizin fotoğrafını çekin veya galeriden seçin!',
+                      style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9)),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -370,7 +263,6 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
               ),
             ),
 
-            // Fotoğraf alanı
             Container(
               width: double.infinity,
               height: 280,
@@ -379,69 +271,36 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                 color: Colors.white,
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: _imageFile != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.file(
-                        _imageFile!,
-                        fit: BoxFit.cover,
-                      ),
+                      child: Image.file(_imageFile!, fit: BoxFit.cover),
                     )
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.add_a_photo,
-                          size: 64,
-                          color: Colors.grey.shade400,
-                        ),
+                        Icon(Icons.add_a_photo_outlined, size: 64, color: Colors.grey.shade400),
                         const SizedBox(height: 16),
-                        Text(
-                          '📸 Yemek fotoğrafı ekleyin',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Kamera veya galeri kullanabilirsiniz',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
+                        Text('Yemek fotoğrafı ekleyin', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
                       ],
                     ),
             ),
 
-            // Butonlar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: OutlinedButton.icon(
                       onPressed: _takePhoto,
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Fotoğraf Çek'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      icon: const Icon(Icons.camera_alt_outlined),
+                      label: const Text('Kamera'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primaryColor,
+                        side: BorderSide(color: primaryColor),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -449,15 +308,13 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: _pickFromGallery,
-                      icon: const Icon(Icons.photo_library),
-                      label: const Text('Galeriden Seç'),
+                      icon: const Icon(Icons.photo_library_outlined),
+                      label: const Text('Galeri'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
+                        backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                   ),
@@ -467,7 +324,6 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
 
             const SizedBox(height: 16),
 
-            // Analiz butonu
             if (_imageFile != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -476,32 +332,19 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                   child: ElevatedButton.icon(
                     onPressed: _isAnalyzing ? null : _analyzeFood,
                     icon: _isAnalyzing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.psychology),
-                    label: Text(
-                      _isAnalyzing ? '🤖 AI Analiz Yapıyor...' : '🚀 AI ile Analiz Et',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.psychology_outlined),
+                    label: Text(_isAnalyzing ? '🤖 AI Analiz Yapıyor...' : '🚀 AI ile Analiz Et', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: secondaryColor,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.all(18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
               ),
 
-            // Analiz sonucu
             _buildAnalysisResult(),
 
             const SizedBox(height: 20),

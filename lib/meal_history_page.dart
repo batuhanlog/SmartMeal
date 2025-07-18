@@ -11,6 +11,12 @@ class MealHistoryPage extends StatefulWidget {
 }
 
 class _MealHistoryPageState extends State<MealHistoryPage> with SingleTickerProviderStateMixin {
+  // --- YENİ RENK PALETİ ---
+  final Color primaryColor = Colors.green.shade800;
+  final Color secondaryColor = Colors.green.shade600;
+  final Color backgroundColor = Colors.grey.shade100;
+  final Color favoriteColor = Colors.pink.shade400;
+
   late TabController _tabController;
   bool _isLoading = true;
   List<Map<String, dynamic>> _mealHistory = [];
@@ -30,226 +36,150 @@ class _MealHistoryPageState extends State<MealHistoryPage> with SingleTickerProv
   }
 
   Future<void> _loadData() async {
+    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Yemek geçmişini yükle
-        final historyQuery = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('meal_history')
-            .orderBy('timestamp', descending: true)
-            .limit(50)
-            .get();
+        final historyQuery = await FirebaseFirestore.instance.collection('users').doc(user.uid).collection('meal_history').orderBy('timestamp', descending: true).limit(50).get();
+        final favoritesQuery = await FirebaseFirestore.instance.collection('users').doc(user.uid).collection('favorite_meals').orderBy('addedAt', descending: true).get();
 
-        // Favori yemekleri yükle
-        final favoritesQuery = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('favorite_meals')
-            .orderBy('addedAt', descending: true)
-            .get();
-
-        setState(() {
-          _mealHistory = historyQuery.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id;
-            return data;
-          }).toList();
-
-          _favoriteMeals = favoritesQuery.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id;
-            return data;
-          }).toList();
-
-          _isLoading = false;
-        });
+        if(mounted) {
+          setState(() {
+            _mealHistory = historyQuery.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+            _favoriteMeals = favoritesQuery.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+            _isLoading = false;
+          });
+        }
+      } else {
+        if(mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
+      if(mounted) {
+        setState(() => _isLoading = false);
         ErrorHandler.showError(context, 'Veriler yüklenirken hata oluştu');
       }
     }
   }
 
   Future<void> _addToFavorites(Map<String, dynamic> meal) async {
+    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('favorite_meals')
-            .add({
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).collection('favorite_meals').add({
           ...meal,
           'addedAt': FieldValue.serverTimestamp(),
         });
-
         if (mounted) {
           ErrorHandler.showSuccess(context, 'Favorilere eklendi!');
-          _loadData(); // Listeyi yenile
+          _loadData();
         }
       }
     } catch (e) {
-      if (mounted) {
-        ErrorHandler.showError(context, 'Favorilere eklenirken hata oluştu');
-      }
+      if (mounted) ErrorHandler.showError(context, 'Favorilere eklenirken hata oluştu');
     }
   }
 
   Future<void> _removeFromFavorites(String docId) async {
+    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('favorite_meals')
-            .doc(docId)
-            .delete();
-
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).collection('favorite_meals').doc(docId).delete();
         if (mounted) {
           ErrorHandler.showSuccess(context, 'Favorilerden kaldırıldı');
-          _loadData(); // Listeyi yenile
+          _loadData();
         }
       }
     } catch (e) {
-      if (mounted) {
-        ErrorHandler.showError(context, 'Favorilerden kaldırılırken hata oluştu');
-      }
+      if (mounted) ErrorHandler.showError(context, 'Favorilerden kaldırılırken hata oluştu');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('📋 Yemek Geçmişim'),
-        backgroundColor: Colors.orange.shade300,
+        title: const Text('Yemek Geçmişim'),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           tabs: const [
-            Tab(
-              icon: Icon(Icons.history),
-              text: 'Geçmiş',
-            ),
-            Tab(
-              icon: Icon(Icons.favorite),
-              text: 'Favoriler',
-            ),
+            Tab(icon: Icon(Icons.history), text: 'Geçmiş'),
+            Tab(icon: Icon(Icons.favorite), text: 'Favoriler'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildHistoryTab(),
-          _buildFavoritesTab(),
-        ],
-      ),
+      body: _isLoading 
+        ? Center(child: CircularProgressIndicator(color: primaryColor))
+        : TabBarView(
+            controller: _tabController,
+            children: [
+              _buildHistoryTab(),
+              _buildFavoritesTab(),
+            ],
+          ),
     );
   }
 
   Widget _buildHistoryTab() {
     if (_mealHistory.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.restaurant_menu,
-              size: 64,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Henüz yemek geçmişin yok',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'AI\'dan yemek önerisi aldığında burada görünecek',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+      return _buildEmptyState(
+        icon: Icons.history_edu_outlined,
+        title: 'Henüz Yemek Geçmişin Yok',
+        subtitle: 'AI\'dan yemek önerisi aldığında burada görünecek.',
       );
     }
-
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       itemCount: _mealHistory.length,
-      itemBuilder: (context, index) {
-        final meal = _mealHistory[index];
-        return _buildMealCard(meal, isHistory: true);
-      },
+      itemBuilder: (context, index) => _buildMealCard(_mealHistory[index], isHistory: true),
     );
   }
 
   Widget _buildFavoritesTab() {
     if (_favoriteMeals.isEmpty) {
-      return const Center(
+      return _buildEmptyState(
+        icon: Icons.favorite_border,
+        title: 'Henüz Favori Yemeğin Yok',
+        subtitle: 'Beğendiğin yemekleri geçmiş listesinden favorilere ekleyebilirsin.',
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _favoriteMeals.length,
+      itemBuilder: (context, index) => _buildMealCard(_favoriteMeals[index], isHistory: false),
+    );
+  }
+
+  Widget _buildEmptyState({required IconData icon, required String title, required String subtitle}) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.favorite_border,
-              size: 64,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Henüz favori yemeğin yok',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Beğendiğin yemekleri favorilere ekleyebilirsin',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
+            Icon(icon, size: 64, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const SizedBox(height: 8),
+            Text(subtitle, style: TextStyle(fontSize: 16, color: Colors.grey.shade600), textAlign: TextAlign.center),
           ],
         ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _favoriteMeals.length,
-      itemBuilder: (context, index) {
-        final meal = _favoriteMeals[index];
-        return _buildMealCard(meal, isHistory: false);
-      },
+      ),
     );
   }
 
   Widget _buildMealCard(Map<String, dynamic> meal, {required bool isHistory}) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 3,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -257,10 +187,7 @@ class _MealHistoryPageState extends State<MealHistoryPage> with SingleTickerProv
           children: [
             Row(
               children: [
-                Text(
-                  meal['emoji'] ?? '🍽️',
-                  style: const TextStyle(fontSize: 24),
-                ),
+                Text(meal['emoji'] ?? '🍽️', style: const TextStyle(fontSize: 24)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -268,18 +195,12 @@ class _MealHistoryPageState extends State<MealHistoryPage> with SingleTickerProv
                     children: [
                       Text(
                         meal['name'] ?? 'Bilinmeyen Yemek',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       if (meal['timestamp'] != null || meal['addedAt'] != null)
                         Text(
                           _formatDate(meal['timestamp'] ?? meal['addedAt']),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                         ),
                     ],
                   ),
@@ -287,42 +208,29 @@ class _MealHistoryPageState extends State<MealHistoryPage> with SingleTickerProv
                 if (isHistory)
                   IconButton(
                     onPressed: () => _addToFavorites(meal),
-                    icon: const Icon(Icons.favorite_border),
+                    icon: Icon(Icons.favorite_border, color: secondaryColor),
                     tooltip: 'Favorilere Ekle',
                   )
                 else
                   IconButton(
                     onPressed: () => _removeFromFavorites(meal['id']),
-                    icon: const Icon(Icons.favorite, color: Colors.red),
+                    icon: Icon(Icons.favorite, color: favoriteColor),
                     tooltip: 'Favorilerden Kaldır',
                   ),
               ],
             ),
-            if (meal['calories'] != null || meal['protein'] != null) ...[
+            if (meal['calories'] != null) ...[
               const SizedBox(height: 12),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  if (meal['calories'] != null)
-                    _buildNutritionChip('Kalori', '${meal['calories']}', Colors.orange),
-                  if (meal['protein'] != null) ...[
-                    const SizedBox(width: 8),
-                    _buildNutritionChip('Protein', '${meal['protein']}g', Colors.blue),
-                  ],
-                  if (meal['prep_time'] != null) ...[
-                    const SizedBox(width: 8),
-                    _buildNutritionChip('Süre', '${meal['prep_time']} dk', Colors.green),
-                  ],
+                  _buildNutritionChip('Kalori', '${meal['calories']} kcal', Colors.purple.shade700),
+                  if (meal['protein'] != null)
+                    _buildNutritionChip('Protein', '${meal['protein']}g', Colors.blue.shade700),
+                  if (meal['prep_time'] != null)
+                    _buildNutritionChip('Süre', '${meal['prep_time']} dk', Colors.teal.shade700),
                 ],
-              ),
-            ],
-            if (meal['description'] != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                meal['description'],
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
               ),
             ],
           ],
@@ -333,61 +241,37 @@ class _MealHistoryPageState extends State<MealHistoryPage> with SingleTickerProv
 
   Widget _buildNutritionChip(String label, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         '$label: $value',
-        style: TextStyle(
-          fontSize: 12,
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
       ),
     );
   }
 
   String _formatDate(dynamic timestamp) {
     if (timestamp == null) return '';
-    
-    DateTime date;
-    if (timestamp is Timestamp) {
-      date = timestamp.toDate();
-    } else if (timestamp is DateTime) {
-      date = timestamp;
-    } else {
-      return '';
-    }
-
+    final date = (timestamp as Timestamp).toDate();
     final now = DateTime.now();
     final difference = now.difference(date);
 
-    if (difference.inDays == 0) {
-      return 'Bugün ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays == 1) {
-      return 'Dün';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} gün önce';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
+    if (difference.inDays == 0) return 'Bugün, ${TimeOfDay.fromDateTime(date).format(context)}';
+    if (difference.inDays == 1) return 'Dün';
+    if (difference.inDays < 7) return '${difference.inDays} gün önce';
+    return '${date.day}/${date.month}/${date.year}';
   }
 }
 
-// Yemek geçmişine kaydetmek için yardımcı fonksiyon
 class MealHistoryService {
   static Future<void> saveMealToHistory(Map<String, dynamic> meal) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('meal_history')
-            .add({
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).collection('meal_history').add({
           ...meal,
           'timestamp': FieldValue.serverTimestamp(),
         });

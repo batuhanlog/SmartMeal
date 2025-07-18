@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:convert';
 
 class WaterTrackingPage extends StatefulWidget {
   const WaterTrackingPage({super.key});
@@ -10,10 +11,15 @@ class WaterTrackingPage extends StatefulWidget {
 }
 
 class _WaterTrackingPageState extends State<WaterTrackingPage> {
+  final Color primaryColor = const Color(0xFF005F73); 
+  final Color secondaryColor = const Color(0xFF0A9396); 
+  final Color successColor = Colors.green.shade600; 
+  final Color backgroundColor = Colors.grey.shade100;
+
   double dailyWaterIntake = 0;
-  double dailyGoal = 2500; // ml
+  double dailyGoal = 2500;
   List<WaterEntry> todayEntries = [];
-  List<double> weeklyData = [0, 0, 0, 0, 0, 0, 0]; // Son 7 gün
+  List<double> weeklyData = List.filled(7, 0);
 
   @override
   void initState() {
@@ -31,14 +37,14 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
       dailyGoal = prefs.getDouble('water_goal') ?? 2500;
     });
     
-    // Haftalık verileri yükle
     for (int i = 0; i < 7; i++) {
       final date = today.subtract(Duration(days: i));
       final dateString = '${date.year}-${date.month}-${date.day}';
       weeklyData[6 - i] = prefs.getDouble('water_$dateString') ?? 0;
     }
     
-    _loadTodayEntries();
+    await _loadTodayEntries();
+    setState(() {});
   }
 
   Future<void> _loadTodayEntries() async {
@@ -47,9 +53,7 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
     final todayString = '${today.year}-${today.month}-${today.day}';
     final entriesJson = prefs.getStringList('water_entries_$todayString') ?? [];
     
-    setState(() {
-      todayEntries = entriesJson.map((e) => WaterEntry.fromJson(e)).toList();
-    });
+    todayEntries = entriesJson.map((e) => WaterEntry.fromJson(e)).toList();
   }
 
   Future<void> _saveWaterData() async {
@@ -60,7 +64,6 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
     await prefs.setDouble('water_$todayString', dailyWaterIntake);
     await prefs.setDouble('water_goal', dailyGoal);
     
-    // Bugünün girişlerini kaydet
     final entriesJson = todayEntries.map((e) => e.toJson()).toList();
     await prefs.setStringList('water_entries_$todayString', entriesJson);
   }
@@ -68,11 +71,7 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
   void _addWater(double amount, String type) {
     setState(() {
       dailyWaterIntake += amount;
-      todayEntries.add(WaterEntry(
-        amount: amount,
-        type: type,
-        time: DateTime.now(),
-      ));
+      todayEntries.add(WaterEntry(amount: amount, type: type, time: DateTime.now()));
     });
     _saveWaterData();
   }
@@ -82,6 +81,18 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
       setState(() {
         final lastEntry = todayEntries.removeLast();
         dailyWaterIntake -= lastEntry.amount;
+        if (dailyWaterIntake < 0) dailyWaterIntake = 0;
+      });
+      _saveWaterData();
+    }
+  }
+
+  void _deleteEntryAtIndex(int index) {
+     if (todayEntries.length > index) {
+      setState(() {
+        final entry = todayEntries.removeAt(index);
+        dailyWaterIntake -= entry.amount;
+        if (dailyWaterIntake < 0) dailyWaterIntake = 0;
       });
       _saveWaterData();
     }
@@ -89,12 +100,13 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final progressPercentage = (dailyWaterIntake / dailyGoal).clamp(0.0, 1.0);
+    final progressPercentage = (dailyGoal > 0) ? (dailyWaterIntake / dailyGoal).clamp(0.0, 1.0) : 0.0;
     
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('💧 Su Takibi'),
-        backgroundColor: Colors.blue,
+        title: const Text('Su Takibi'),
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -102,23 +114,14 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Günlük Progress
             _buildProgressCard(progressPercentage),
             const SizedBox(height: 20),
-            
-            // Hızlı Ekleme Butonları
             _buildQuickAddButtons(),
             const SizedBox(height: 20),
-            
-            // Bugünün Girişleri
             _buildTodayEntries(),
             const SizedBox(height: 20),
-            
-            // Haftalık Grafik
             _buildWeeklyChart(),
             const SizedBox(height: 20),
-            
-            // Hedef Ayarlama
             _buildGoalSetting(),
           ],
         ),
@@ -129,16 +132,20 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
   Widget _buildProgressCard(double progress) {
     return Card(
       elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          // --- 1. DÜZELTME: Hizalama "stretch" yapıldı ---
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'Günlük Su Tüketimi',
-              style: Theme.of(context).textTheme.headlineSmall,
+              // --- 2. DÜZELTME: Metin ortalandı ---
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            
             Stack(
               alignment: Alignment.center,
               children: [
@@ -149,56 +156,34 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
                     value: progress,
                     strokeWidth: 15,
                     backgroundColor: Colors.grey.shade300,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      progress >= 1.0 ? Colors.green : Colors.blue,
-                    ),
+                    valueColor: AlwaysStoppedAnimation<Color>(progress >= 1.0 ? successColor : secondaryColor),
                   ),
                 ),
                 Column(
                   children: [
-                    Text(
-                      '${(dailyWaterIntake / 1000).toStringAsFixed(1)}L',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '${(dailyGoal / 1000).toStringAsFixed(1)}L hedef',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    Text(
-                      '%${(progress * 100).toInt()}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: progress >= 1.0 ? Colors.green : Colors.blue,
-                      ),
-                    ),
+                    Text('${(dailyWaterIntake / 1000).toStringAsFixed(1)}L', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                    Text(' / ${(dailyGoal / 1000).toStringAsFixed(1)}L Hedef', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+                    const SizedBox(height: 4),
+                    Text('%${(progress * 100).toInt()}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: progress >= 1.0 ? successColor : secondaryColor)),
                   ],
                 ),
               ],
             ),
-            
             const SizedBox(height: 20),
-            
             if (progress >= 1.0)
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.green),
-                    SizedBox(width: 8),
-                    Text('Günlük hedef tamamlandı! 🎉'),
-                  ],
+              Align( // Bu widget'ı Align ile sarmalayarak ortalıyoruz
+                alignment: Alignment.center,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(color: successColor.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle, color: successColor),
+                      const SizedBox(width: 8),
+                      Text('Günlük hedef tamamlandı! 🎉', style: TextStyle(color: successColor, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
               ),
           ],
@@ -209,35 +194,21 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
 
   Widget _buildQuickAddButtons() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Hızlı Ekleme',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Text('Hızlı Ekle', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildQuickButton('💧 200ml', 200, '200ml'),
-                _buildQuickButton('🥤 250ml', 250, '250ml'),
-                _buildQuickButton('🍶 500ml', 500, '500ml'),
-                _buildQuickButton('🍶 1L', 1000, '1L'),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildQuickButton('☕ Çay', 200, 'Çay'),
-                _buildQuickButton('☕ Kahve', 150, 'Kahve'),
-                _buildQuickButton('🥤 Meyve Suyu', 250, 'Meyve Suyu'),
+                _buildQuickButton('💧 200ml', 200, 'Bardak'),
+                _buildQuickButton('🥤 250ml', 250, 'Kupa'),
+                _buildQuickButton('🍶 500ml', 500, 'Şişe'),
                 _buildUndoButton(),
               ],
             ),
@@ -254,15 +225,13 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
         child: ElevatedButton(
           onPressed: () => _addWater(amount, type),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue.shade100,
-            foregroundColor: Colors.blue.shade800,
+            backgroundColor: secondaryColor.withOpacity(0.15),
+            foregroundColor: primaryColor,
+            elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
+          child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
         ),
       ),
     );
@@ -272,18 +241,15 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: ElevatedButton(
+        child: OutlinedButton(
           onPressed: todayEntries.isNotEmpty ? _removeLastEntry : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red.shade100,
-            foregroundColor: Colors.red.shade800,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.grey.shade600,
+            side: BorderSide(color: Colors.grey.shade300),
             padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text(
-            '↶ Geri Al',
-            style: TextStyle(fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
+          child: const Text('↶ Geri Al', style: TextStyle(fontSize: 12), textAlign: TextAlign.center),
         ),
       ),
     );
@@ -291,21 +257,19 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
 
   Widget _buildTodayEntries() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Bugünün Girişleri',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            
+            Text('Bugünün Girişleri', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
             if (todayEntries.isEmpty)
-              const Text(
-                'Henüz su tüketimi kaydedilmemiş.',
-                style: TextStyle(color: Colors.grey),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.0),
+                child: Center(child: Text('Henüz su tüketimi kaydedilmemiş.', style: TextStyle(color: Colors.grey))),
               )
             else
               ListView.builder(
@@ -313,22 +277,14 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: todayEntries.length,
                 itemBuilder: (context, index) {
-                  final entry = todayEntries[index];
+                  final entry = todayEntries.reversed.toList()[index];
                   return ListTile(
-                    leading: const Icon(Icons.water_drop, color: Colors.blue),
+                    leading: Icon(Icons.water_drop_outlined, color: secondaryColor),
                     title: Text('${entry.amount.toInt()}ml ${entry.type}'),
-                    subtitle: Text(
-                      '${entry.time.hour.toString().padLeft(2, '0')}:${entry.time.minute.toString().padLeft(2, '0')}',
-                    ),
+                    subtitle: Text('${entry.time.hour.toString().padLeft(2, '0')}:${entry.time.minute.toString().padLeft(2, '0')}'),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        setState(() {
-                          dailyWaterIntake -= entry.amount;
-                          todayEntries.removeAt(index);
-                        });
-                        _saveWaterData();
-                      },
+                      icon: Icon(Icons.delete_outline, color: Colors.red.shade300),
+                      onPressed: () => _deleteEntryAtIndex(todayEntries.length - 1 - index),
                     ),
                   );
                 },
@@ -341,17 +297,15 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
 
   Widget _buildWeeklyChart() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Haftalık Tüketim',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            
+            Text('Haftalık Tüketim Grafiği', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
             SizedBox(
               height: 200,
               child: BarChart(
@@ -361,27 +315,17 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
                   barTouchData: BarTouchData(enabled: false),
                   titlesData: FlTitlesData(
                     show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          const days = ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'];
-                          return Text(days[value.toInt() % 7]);
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          return Text('${(value / 1000).toStringAsFixed(1)}L');
-                        },
-                      ),
-                    ),
+                    bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (value, meta) {
+                      final today = DateTime.now();
+                      final day = today.subtract(Duration(days: 6 - value.toInt()));
+                      const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+                      return Text(days[day.weekday - 1]);
+                    })),
+                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (value, meta) => Text('${(value / 1000).toStringAsFixed(1)}L'))),
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
-                  gridData: const FlGridData(show: false),
+                  gridData: FlGridData(show: true, drawVerticalLine: false, getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1)),
                   borderData: FlBorderData(show: false),
                   barGroups: weeklyData.asMap().entries.map((entry) {
                     return BarChartGroupData(
@@ -389,12 +333,9 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
                       barRods: [
                         BarChartRodData(
                           toY: entry.value,
-                          color: entry.value >= dailyGoal ? Colors.green : Colors.blue,
-                          width: 30,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(4),
-                            topRight: Radius.circular(4),
-                          ),
+                          color: entry.value >= dailyGoal ? successColor : secondaryColor,
+                          width: 22,
+                          borderRadius: const BorderRadius.all(Radius.circular(6)),
                         ),
                       ],
                     );
@@ -410,17 +351,15 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
 
   Widget _buildGoalSetting() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Günlük Hedef',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            
+            Text('Günlük Hedefini Ayarla', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -430,28 +369,13 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
                     max: 5000,
                     divisions: 40,
                     label: '${(dailyGoal / 1000).toStringAsFixed(1)}L',
-                    onChanged: (value) {
-                      setState(() {
-                        dailyGoal = value;
-                      });
-                    },
-                    onChangeEnd: (value) {
-                      _saveWaterData();
-                    },
+                    activeColor: primaryColor,
+                    onChanged: (value) => setState(() => dailyGoal = value),
+                    onChangeEnd: (value) => _saveWaterData(),
                   ),
                 ),
-                Text(
-                  '${(dailyGoal / 1000).toStringAsFixed(1)}L',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                Text('${(dailyGoal / 1000).toStringAsFixed(1)}L', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ],
-            ),
-            
-            const SizedBox(height: 8),
-            
-            const Text(
-              'Yaş, kilo ve aktivite seviyenize göre günlük 2-3 litre su tüketimi önerilir.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
@@ -465,29 +389,16 @@ class WaterEntry {
   final String type;
   final DateTime time;
 
-  WaterEntry({
-    required this.amount,
-    required this.type,
-    required this.time,
-  });
+  WaterEntry({required this.amount, required this.type, required this.time});
+  
+  String toJson() => json.encode({'amount': amount, 'type': type, 'time': time.toIso8601String()});
 
-  String toJson() {
-    return '${amount.toString()},${type},${'${time.year}-${time.month}-${time.day}-${time.hour}-${time.minute}'}';
-  }
-
-  static WaterEntry fromJson(String json) {
-    final parts = json.split(',');
-    final timeParts = parts[2].split('-');
+  static WaterEntry fromJson(String jsonString) {
+    final map = json.decode(jsonString);
     return WaterEntry(
-      amount: double.parse(parts[0]),
-      type: parts[1],
-      time: DateTime(
-        int.parse(timeParts[0]),
-        int.parse(timeParts[1]),
-        int.parse(timeParts[2]),
-        int.parse(timeParts[3]),
-        int.parse(timeParts[4]),
-      ),
+      amount: map['amount'],
+      type: map['type'],
+      time: DateTime.parse(map['time']),
     );
   }
 }
