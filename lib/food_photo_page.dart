@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'services/gemini_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class FoodPhotoPage extends StatefulWidget {
   const FoodPhotoPage({super.key});
@@ -12,19 +13,25 @@ class FoodPhotoPage extends StatefulWidget {
 }
 
 class _FoodPhotoPageState extends State<FoodPhotoPage> {
+  // --- YENİ RENK PALETİ ---
+  final Color primaryColor = Colors.green.shade800;
+  final Color secondaryColor = Colors.green.shade600;
+  final Color backgroundColor = Colors.grey.shade100;
+
   File? _imageFile;
+  Uint8List? _imageBytes;
   bool _isAnalyzing = false;
   Map<String, dynamic>? _analysisResult;
   final ImagePicker _picker = ImagePicker();
   final GeminiService _geminiService = GeminiService();
 
   Future<void> _takePhoto() async {
+    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 80,
       );
-      
       if (photo != null) {
         setState(() {
           _imageFile = File(photo.path);
@@ -49,12 +56,24 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-      
+
       if (image != null) {
-        setState(() {
-          _imageFile = File(image.path);
-          _analysisResult = null;
-        });
+        if (kIsWeb) {
+          // Web platformunda: Uint8List ile gösterim
+          final bytes = await image.readAsBytes();
+          setState(() {
+            _imageBytes = bytes;
+            _imageFile = null; // Web'de file kullanılmaz
+            _analysisResult = null;
+          });
+        } else {
+          // Mobil/masaüstü platformlarında: File ile gösterim
+          setState(() {
+            _imageFile = File(image.path);
+            _imageBytes = null;
+            _analysisResult = null;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -69,48 +88,51 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
   }
 
   Future<void> _analyzeFood() async {
-    if (_imageFile == null) return;
-
-    setState(() {
-      _isAnalyzing = true;
-    });
+    setState(() => _isAnalyzing = true);
 
     try {
-      // Read image as bytes for Gemini API
-      final Uint8List imageBytes = await _imageFile!.readAsBytes();
-      
-      // Call Gemini AI service for food analysis
+      Uint8List? imageBytes;
+
+      if (_imageFile != null) {
+        imageBytes = await _imageFile!.readAsBytes();
+      } else if (_imageBytes != null) {
+        imageBytes = _imageBytes!;
+      } else {
+        // Hiç fotoğraf yoksa çık
+        setState(() => _isAnalyzing = false);
+        return;
+      }
+
       final result = await _geminiService.analyzeFoodPhoto(imageBytes);
 
-      setState(() {
-        _analysisResult = {
-          'foodName': result['food_name'] ?? 'Bilinmeyen Yemek',
-          'calories': result['calories'] ?? 0,
-          'protein': '${result['protein'] ?? 0}g',
-          'carbs': '${result['carbs'] ?? 0}g',
-          'fat': '${result['fat'] ?? 0}g',
-          'confidence': (result['confidence'] ?? 0) / 100.0,
-          'healthScore': result['health_score'] ?? 5,
-          'analysis': result['analysis'] ?? 'Analiz yapılamadı',
-          'recommendations': result['suggestions'] ?? ['Önerimiz bulunmuyor'],
-        };
-        _isAnalyzing = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isAnalyzing = false;
-      });
-      
       if (mounted) {
+        setState(() {
+          _analysisResult = {
+            'foodName': result['food_name'] ?? 'Bilinmeyen Yemek',
+            'calories': result['calories'] ?? 0,
+            'protein': '${result['protein'] ?? 0}g',
+            'carbs': '${result['carbs'] ?? 0}g',
+            'fat': '${result['fat'] ?? 0}g',
+            'confidence': (result['confidence'] ?? 0) / 100.0,
+            'healthScore': result['health_score'] ?? 5,
+            'analysis': result['analysis'] ?? 'Analiz yapılamadı',
+            'recommendations': result['suggestions'] ?? ['Önerimiz bulunmuyor'],
+          };
+          _isAnalyzing = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isAnalyzing = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Analiz hatası: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Analiz hatası: $e'), backgroundColor: Colors.red),
         );
       }
     }
   }
+
+
+  // --- YARDIMCI FONKSİYONLAR SINIF İÇİNE ALINDI VE RENKLER GÜNCELLENDİ ---
 
   Widget _buildAnalysisResult() {
     if (_analysisResult == null) return const SizedBox.shrink();
@@ -121,12 +143,13 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
 
     return Card(
       margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Row(
               children: [
                 Expanded(
@@ -139,7 +162,10 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: _getHealthColor(healthScore),
                     borderRadius: BorderRadius.circular(20),
@@ -157,28 +183,25 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
             const SizedBox(height: 8),
             Text(
               'Güven: ${(confidence * 100).toInt()}%',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
             const SizedBox(height: 16),
-            
-            // AI Analysis
-            if (result['analysis'] != null && result['analysis'].isNotEmpty) ...[
+
+            if (result['analysis'] != null &&
+                result['analysis'].isNotEmpty) ...[
               Text(
                 'AI Analizi',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.blue.shade700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: primaryColor),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade200),
+                  border: Border.all(color: Colors.green.shade200),
                 ),
                 child: Text(
                   result['analysis'],
@@ -187,8 +210,7 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
               ),
               const SizedBox(height: 16),
             ],
-            
-            // Besin değerleri
+
             Text(
               'Besin Değerleri',
               style: Theme.of(context).textTheme.titleMedium,
@@ -197,24 +219,43 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNutritionInfo('Kalori', '${result['calories']}', Icons.local_fire_department, Colors.orange),
-                _buildNutritionInfo('Protein', result['protein'], Icons.fitness_center, Colors.red),
-                _buildNutritionInfo('Karbonhidrat', result['carbs'], Icons.grain, Colors.brown),
-                _buildNutritionInfo('Yağ', result['fat'], Icons.opacity, Colors.yellow.shade700),
+                _buildNutritionInfo(
+                  'Kalori',
+                  '${result['calories']}',
+                  Icons.local_fire_department,
+                  Colors.orange.shade600,
+                ),
+                _buildNutritionInfo(
+                  'Protein',
+                  result['protein'],
+                  Icons.fitness_center,
+                  Colors.blue.shade600,
+                ),
+                _buildNutritionInfo(
+                  'Karbonhidrat',
+                  result['carbs'],
+                  Icons.grain,
+                  Colors.brown.shade500,
+                ),
+                _buildNutritionInfo(
+                  'Yağ',
+                  result['fat'],
+                  Icons.opacity,
+                  Colors.amber.shade600,
+                ),
               ],
             ),
             const SizedBox(height: 16),
-            
-            // Öneriler
+
             Text(
               'Beslenme Önerileri',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.green.shade700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: primaryColor),
             ),
             const SizedBox(height: 8),
-            ...((result['recommendations'] as List<String>).map((rec) => 
-              Padding(
+            ...((result['recommendations'] as List<dynamic>).cast<String>().map(
+              (rec) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,49 +267,46 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        rec,
-                        style: const TextStyle(fontSize: 14),
-                      ),
+                      child: Text(rec, style: const TextStyle(fontSize: 14)),
                     ),
                   ],
                 ),
               ),
             )),
-            
+
             const SizedBox(height: 16),
-            
-            // Action Buttons
+
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _imageFile = null;
-                        _analysisResult = null;
-                      });
-                    },
+                    onPressed: () => setState(() {
+                      _imageFile = null;
+                      _analysisResult = null;
+                    }),
                     icon: const Icon(Icons.refresh),
                     label: const Text('Yeni Analiz'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: primaryColor,
+                      side: BorderSide(color: primaryColor),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Save to history or favorites
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Analiz kaydedildi!'),
-                          backgroundColor: Colors.green,
+                        SnackBar(
+                          content: const Text('Analiz kaydedildi!'),
+                          backgroundColor: secondaryColor,
                         ),
                       );
                     },
                     icon: const Icon(Icons.save),
                     label: const Text('Kaydet'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: secondaryColor,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -281,73 +319,67 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
     );
   }
 
-  Widget _buildNutritionInfo(String label, String value, IconData icon, Color color) {
+  Widget _buildNutritionInfo(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Icon(icon, color: color, size: 24),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
         ),
       ],
     );
   }
 
   Color _getHealthColor(int score) {
-    if (score >= 8) return Colors.green;
-    if (score >= 6) return Colors.orange;
-    return Colors.red;
+    if (score >= 8) return Colors.green.shade600;
+    if (score >= 6) return Colors.orange.shade600;
+    return Colors.red.shade600;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Yemek Analizi',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.indigo,
+        title: const Text('Yemek Analizi'),
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        elevation: 0,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header Card
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.indigo, Colors.indigo.shade300],
+                  colors: [primaryColor, secondaryColor],
                 ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.camera_enhance,
                       size: 48,
                       color: Colors.white,
                     ),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       '🤖 AI ile Yemek Analizi',
                       style: TextStyle(
                         fontSize: 20,
@@ -358,7 +390,7 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Yemeğinizin fotoğrafını çekin, besin değerlerini ve sağlık puanını öğrenin!',
+                      'Yemeğinizin fotoğrafını çekin veya galeriden seçin!',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.white.withOpacity(0.9),
@@ -370,7 +402,6 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
               ),
             ),
 
-            // Fotoğraf alanı
             Container(
               width: double.infinity,
               height: 280,
@@ -379,95 +410,114 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                 color: Colors.white,
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: _imageFile != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.file(
-                        _imageFile!,
-                        fit: BoxFit.cover,
-                      ),
+                      child: Image.file(_imageFile!, fit: BoxFit.cover),
+                    )
+                  : _imageBytes != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.memory(_imageBytes!, fit: BoxFit.cover),
                     )
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.add_a_photo,
+                          Icons.add_a_photo_outlined,
                           size: 64,
                           color: Colors.grey.shade400,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          '📸 Yemek fotoğrafı ekleyin',
+                          'Yemek fotoğrafı ekleyin',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade600,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Kamera veya galeri kullanabilirsiniz',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
                       ],
                     ),
             ),
 
-            // Butonlar
+            // ... üst kısımlar aynı kalıyor
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _takePhoto,
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Fotoğraf Çek'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+              child: (_imageFile == null && _imageBytes == null)
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _takePhoto,
+                            icon: const Icon(Icons.camera_alt_outlined),
+                            label: const Text('Kamera'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: primaryColor,
+                              side: BorderSide(color: primaryColor),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _pickFromGallery,
+                            icon: const Icon(Icons.photo_library_outlined),
+                            label: const Text('Galeri'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isAnalyzing ? null : _analyzeFood,
+                        icon: _isAnalyzing
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.psychology_outlined),
+                        label: Text(
+                          _isAnalyzing
+                              ? '🤖 AI Analiz Yapıyor...'
+                              : '🚀 AI ile Analiz Et',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: secondaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.all(18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pickFromGallery,
-                      icon: const Icon(Icons.photo_library),
-                      label: const Text('Galeriden Seç'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
 
             const SizedBox(height: 16),
 
-            // Analiz butonu
             if (_imageFile != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -484,13 +534,18 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                               color: Colors.white,
                             ),
                           )
-                        : const Icon(Icons.psychology),
+                        : const Icon(Icons.psychology_outlined),
                     label: Text(
-                      _isAnalyzing ? '🤖 AI Analiz Yapıyor...' : '🚀 AI ile Analiz Et',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      _isAnalyzing
+                          ? '🤖 AI Analiz Yapıyor...'
+                          : '🚀 AI ile Analiz Et',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: secondaryColor,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.all(18),
                       shape: RoundedRectangleBorder(
@@ -501,7 +556,6 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                 ),
               ),
 
-            // Analiz sonucu
             _buildAnalysisResult(),
 
             const SizedBox(height: 20),
