@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+<key>NS_PHOTO_LIBRARY_USAGE_DESCRIPTION</key>
+<string>Uygulama, kan tahlili sonuçlarınızı yükleyebilmeniz için fotoğraf galerinize erişim izni istiyor.</string>
+<key>NS_CAMERA_USAGE_DESCRIPTION</key>
+<string>Uygulama, kan tahlili sonuçlarınızın fotoğrafını çekebilmeniz için kameranıza erişim izni istiyor.</string>
+<key>NS_MICROPHONE_USAGE_DESCRIPTION</key>
+<string>Uygulama, video kaydı sırasında ses ekleyebilmeniz için mikrofonunuza erişim izni istiyor (kullanılmasa bile eklenmesi tavsiye edilir).</string>
 </dict>
 </plist>

@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'services/error_handler.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -18,41 +21,24 @@ class _ProfilePageState extends State<ProfilePage> {
   final _heightController = TextEditingController();
   final _allergiesController = TextEditingController();
 
-  // Beslenme ve alerji seçimleri
   List<String> secilenDiyetTurleri = [];
   List<String> secilenAlerjiler = [];
-  
-  // Açılır/kapanır bölümler için kontroller
+
   bool isDietSectionExpanded = false;
   bool isAllergySectionExpanded = false;
-  
-  // Emoji'li beslenme türü listesi
+
   final Map<String, String> dietTypesWithEmojis = {
-    'Dengeli': '⚖️',
-    'Vegan': '🌱',
-    'Vejetaryen': '🥗',
-    'Ketojenik': '🥑',
-    'Akdeniz Diyeti': '🫒',
-    'Yüksek Protein': '🥩',
-    'Düşük Karbonhidrat': '🥬',
-    'Şekersiz': '🚫',
-    'Karnivor': '🥩',
+    'Dengeli': '⚖️', 'Vegan': '🌱', 'Vejetaryen': '🥗', 'Ketojenik': '🥑',
+    'Akdeniz Diyeti': '🫒', 'Yüksek Protein': '🥩', 'Düşük Karbonhidrat': '🥬',
+    'Şekersiz': '🚫', 'Karnivor': '🥩',
   };
-  
-  // Emoji'li alerji listesi
+
   final Map<String, String> allergiesWithEmojis = {
-    'Gluten': '🌾',
-    'Laktoz': '🥛',
-    'Yumurta': '🥚',
-    'Soya': '🫘',
-    'Fıstık': '🥜',
-    'Ceviz, Badem vb. (Ağaç Kuruyemişleri)': '🌰',
-    'Deniz Ürünleri (Balık, Kabuklular)': '🐟',
-    'Hardal': '🟡',
-    'Susam': '🌻',
+    'Gluten': '🌾', 'Laktoz': '🥛', 'Yumurta': '🥚', 'Soya': '🫘', 'Fıstık': '🥜',
+    'Ceviz, Badem vb. (Ağaç Kuruyemişleri)': '🌰', 'Deniz Ürünleri (Balık, Kabuklular)': '🐟',
+    'Hardal': '🟡', 'Susam': '🌻',
   };
-  
-  // "Diğer" seçenekleri için kontroller
+
   bool digerDiyetTuruSecili = false;
   bool digerAlerjiSecili = false;
   final _digerDiyetTuruController = TextEditingController();
@@ -65,6 +51,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   final List<String> _genderOptions = ['Erkek', 'Kadın', 'Belirtmek istemiyorum'];
   final List<String> _activityLevels = ['Düşük', 'Orta', 'Yüksek', 'Çok Yüksek'];
+
+  String? _bloodTestImageUrl;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -92,8 +81,8 @@ class _ProfilePageState extends State<ProfilePage> {
             .collection('users')
             .doc(user.uid)
             .get();
-        
-        if (doc.exists) {
+
+        if (mounted && doc.exists) {
           final data = doc.data()!;
           setState(() {
             _nameController.text = data['name'] ?? '';
@@ -102,35 +91,66 @@ class _ProfilePageState extends State<ProfilePage> {
             _heightController.text = (data['height'] ?? '').toString();
             _gender = data['gender'] ?? 'Erkek';
             _activityLevel = data['activityLevel'] ?? 'Orta';
-            
-            // Beslenme türlerini yükle
+
             if (data['dietTypes'] != null) {
               secilenDiyetTurleri = List<String>.from(data['dietTypes']);
             } else if (data['dietType'] != null) {
-              // Eski tek seçim formatından yeni çoklu seçim formatına geçiş
               secilenDiyetTurleri = [data['dietType']];
             }
-            
-            // Alerjileri yükle
+
             if (data['allergies'] != null) {
               if (data['allergies'] is List) {
                 secilenAlerjiler = List<String>.from(data['allergies']);
               } else {
-                // Eski string formatından yeni liste formatına geçiş
                 _allergiesController.text = data['allergies'];
               }
             }
-            
+
+            _bloodTestImageUrl = data['bloodTestImageUrl'];
             _isLoading = false;
           });
+        } else if (mounted) {
+          setState(() => _isLoading = false);
         }
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
+      if(mounted){
+        setState(() => _isLoading = false);
         ErrorHandler.showError(context, 'Profil bilgileri yüklenirken hata oluştu');
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadBloodTest() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile == null) return;
+
+    setState(() => _isUploading = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final file = File(pickedFile.path);
+      final ref = FirebaseStorage.instance.ref().child('blood_tests').child('${user.uid}.jpg');
+
+      await ref.putFile(file);
+      final downloadUrl = await ref.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'bloodTestImageUrl': downloadUrl});
+
+      if (mounted) {
+        setState(() => _bloodTestImageUrl = downloadUrl);
+        ErrorHandler.showSuccess(context, 'Kan tahlili başarıyla yüklendi!');
+      }
+
+    } catch (e) {
+      if (mounted) {
+        ErrorHandler.showError(context, 'Dosya yüklenirken bir hata oluştu.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
       }
     }
   }
@@ -138,25 +158,19 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isSaving = true;
-    });
+    setState(() => _isSaving = true);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // "Diğer" seçenekleri için kontroller
         if (digerDiyetTuruSecili && _digerDiyetTuruController.text.isNotEmpty) {
           secilenDiyetTurleri.add(_digerDiyetTuruController.text);
         }
         if (digerAlerjiSecili && _digerAlerjiController.text.isNotEmpty) {
           secilenAlerjiler.add(_digerAlerjiController.text);
         }
-        
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .update({
+
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
           'name': _nameController.text,
           'age': int.tryParse(_ageController.text) ?? 0,
           'weight': double.tryParse(_weightController.text) ?? 0,
@@ -178,9 +192,9 @@ class _ProfilePageState extends State<ProfilePage> {
         ErrorHandler.showError(context, 'Profil güncellenirken hata oluştu');
       }
     } finally {
-      setState(() {
-        _isSaving = false;
-      });
+      if(mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -198,11 +212,18 @@ class _ProfilePageState extends State<ProfilePage> {
     return 'Obez';
   }
 
+  // --- RENK DÜZENLEMESİ: BMI KARTI ARKA PLANI VE YAZI RENGİ ---
   Color _getBMIColor(double bmi) {
-    if (bmi < 18.5) return Colors.blue;
-    if (bmi < 25) return Colors.green;
-    if (bmi < 30) return Colors.orange;
-    return Colors.red;
+    if (bmi < 18.5) return Colors.blue.shade200.withOpacity(0.8); // Daha açık mavi
+    if (bmi < 25) return Colors.green.shade200.withOpacity(0.8); // Daha açık yeşil
+    if (bmi < 30) return Colors.orange.shade200.withOpacity(0.8); // Daha açık turuncu
+    return Colors.red.shade200.withOpacity(0.8); // Daha açık kırmızı
+  }
+
+  // BMI başlığı için daha koyu bir renk
+  Color _getBMITextColor(double bmi) {
+    if (bmi < 25) return Colors.green.shade800;
+    return Colors.black87; // Diğer durumlarda okunabilir siyah tonu
   }
 
   @override
@@ -217,15 +238,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('👤 Profil Düzenle'),
-        backgroundColor: Colors.purple.shade300,
+        title: const Text('Profil Düzenle'),
+        backgroundColor: Colors.green.shade600,
+        foregroundColor: Colors.white,
         actions: [
           if (_isSaving)
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: SizedBox(
-                width: 20,
-                height: 20,
+                width: 20, height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -250,10 +271,10 @@ class _ProfilePageState extends State<ProfilePage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // BMI Card
-            if (bmi > 0) ...[
+            if (bmi > 0) ... [
               Card(
-                color: _getBMIColor(bmi).withOpacity(0.1),
+                // --- YENİ ARKA PLAN RENGİ ---
+                color: _getBMIColor(bmi),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -263,7 +284,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: _getBMIColor(bmi),
+                          // --- YENİ BAŞLIK RENGİ ---
+                          color: _getBMITextColor(bmi),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -272,7 +294,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: _getBMIColor(bmi),
+                          color: _getBMITextColor(bmi),
                         ),
                       ),
                       Text(
@@ -280,7 +302,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: _getBMIColor(bmi),
+                          color: _getBMITextColor(bmi),
                         ),
                       ),
                     ],
@@ -289,8 +311,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 16),
             ],
-
-            // Kişisel Bilgiler
             _buildSectionCard(
               title: '👤 Kişisel Bilgiler',
               children: [
@@ -343,7 +363,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 16),
 
-            // Fiziksel Özellikler
             _buildSectionCard(
               title: '📏 Fiziksel Özellikler',
               children: [
@@ -398,7 +417,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 16),
 
-            // Modern Beslenme Tercihleri
             _buildSectionCard(
               title: '🥗 Beslenme Tercihleri',
               children: [
@@ -408,9 +426,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.restaurant_menu, color: Colors.green),
+                        leading: Icon(Icons.restaurant_menu, color: Colors.green.shade700),
                         title: const Text('🍽️ Beslenme Tercihleri'),
-                        subtitle: secilenDiyetTurleri.isEmpty 
+                        subtitle: secilenDiyetTurleri.isEmpty
                             ? const Text('Tercihlerinizi seçin')
                             : Text('${secilenDiyetTurleri.length} seçenek seçildi'),
                         trailing: Icon(isDietSectionExpanded ? Icons.expand_less : Icons.expand_more),
@@ -426,7 +444,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Beslenme türlerinizi seçin:', 
+                              const Text('Beslenme türlerinizi seçin:',
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                               const SizedBox(height: 8),
                               ...dietTypesWithEmojis.entries.map((entry) {
@@ -435,12 +453,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                 return Container(
                                   margin: const EdgeInsets.symmetric(vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: secilenDiyetTurleri.contains(type) 
+                                    color: secilenDiyetTurleri.contains(type)
                                         ? Colors.green.withOpacity(0.1)
                                         : Colors.grey.withOpacity(0.05),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: CheckboxListTile(
+                                    activeColor: Colors.green.shade700,
                                     title: Row(
                                       children: [
                                         Text(emoji, style: const TextStyle(fontSize: 18)),
@@ -467,12 +486,13 @@ class _ProfilePageState extends State<ProfilePage> {
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: digerDiyetTuruSecili 
-                                      ? Colors.orange.withOpacity(0.1)
+                                  color: digerDiyetTuruSecili
+                                      ? Colors.green.withOpacity(0.1)
                                       : Colors.grey.withOpacity(0.05),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: CheckboxListTile(
+                                  activeColor: Colors.green.shade700,
                                   title: const Row(
                                     children: [
                                       Text('✏️', style: TextStyle(fontSize: 18)),
@@ -513,7 +533,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 16),
 
-            // Modern Alerjiler
             _buildSectionCard(
               title: '⚠️ Alerjiler',
               children: [
@@ -523,9 +542,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.warning, color: Colors.orange),
+                        leading: Icon(Icons.warning, color: Colors.orange.shade700),
                         title: const Text('⚠️ Alerjileriniz'),
-                        subtitle: secilenAlerjiler.isEmpty 
+                        subtitle: secilenAlerjiler.isEmpty
                             ? const Text('Varsa seçin (isteğe bağlı)')
                             : Text('${secilenAlerjiler.length} alerji seçildi'),
                         trailing: Icon(isAllergySectionExpanded ? Icons.expand_less : Icons.expand_more),
@@ -541,7 +560,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Alerjilerinizi seçin:', 
+                              const Text('Alerjilerinizi seçin:',
                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                               const SizedBox(height: 8),
                               ...allergiesWithEmojis.entries.map((entry) {
@@ -550,12 +569,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                 return Container(
                                   margin: const EdgeInsets.symmetric(vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: secilenAlerjiler.contains(allergen) 
+                                    color: secilenAlerjiler.contains(allergen)
                                         ? Colors.orange.withOpacity(0.1)
                                         : Colors.grey.withOpacity(0.05),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: CheckboxListTile(
+                                    activeColor: Colors.orange.shade700,
                                     title: Row(
                                       children: [
                                         Text(emoji, style: const TextStyle(fontSize: 18)),
@@ -582,12 +602,13 @@ class _ProfilePageState extends State<ProfilePage> {
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: digerAlerjiSecili 
-                                      ? Colors.red.withOpacity(0.1)
+                                  color: digerAlerjiSecili
+                                      ? Colors.orange.withOpacity(0.1)
                                       : Colors.grey.withOpacity(0.05),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: CheckboxListTile(
+                                  activeColor: Colors.orange.shade700,
                                   title: const Row(
                                     children: [
                                       Text('✏️', style: TextStyle(fontSize: 18)),
@@ -626,13 +647,48 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
 
+            const SizedBox(height: 16),
+
+            _buildSectionCard(
+              title: '🩸 Kan Tahlili Sonuçları',
+              children: [
+                if (_isUploading)
+                  const Center(child: CircularProgressIndicator())
+                else if (_bloodTestImageUrl != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(_bloodTestImageUrl!),
+                      ),
+                      const SizedBox(height: 8),
+                      Center(
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Değiştir'),
+                          onPressed: _pickAndUploadBloodTest,
+                        ),
+                      )
+                    ],
+                  )
+                else
+                  ListTile(
+                    leading: Icon(Icons.upload_file_rounded, color: Colors.green.shade700),
+                    title: const Text('Kan Tahlili Sonuçlarını Yükle'),
+                    subtitle: const Text('PDF veya resim formatında yükleyin'),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: _pickAndUploadBloodTest,
+                  ),
+              ],
+            ),
+
             const SizedBox(height: 32),
 
-            // Kaydet Butonu
             ElevatedButton(
               onPressed: _isSaving ? null : _saveProfile,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple.shade300,
+                backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -644,8 +700,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
-                          width: 20,
-                          height: 20,
+                          width: 20, height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),

@@ -10,6 +10,7 @@ class AuthPage extends StatefulWidget {
 
   @override
   State<AuthPage> createState() => _AuthPageState();
+  
 }
 
 class _AuthPageState extends State<AuthPage> {
@@ -23,44 +24,25 @@ class _AuthPageState extends State<AuthPage> {
   double height = 0;
   String gender = 'Erkek';
   
-  // Beslenme ve alerji seçimleri
+  // --- DEĞİŞİKLİK 1: 'dietType' artık bir liste ---
+  // Tek bir String yerine, seçilen birden çok beslenme türünü tutacak bir liste oluşturuyoruz.
   List<String> secilenDiyetTurleri = [];
-  List<String> secilenAlerjiler = [];
   
-  // Açılır/kapanır bölümler için kontroller
-  bool isDietSectionExpanded = false;
-  bool isAllergySectionExpanded = false;
+  // Beslenme türü listesi
+  final dietTypes = ['Dengeli', 'Vegan', 'Vejetaryen', 'Ketojenik', 'Akdeniz Diyeti', 'Yüksek Protein', 'Düşük Karbonhidrat', 'Şekersiz', 'Karnivor'];
   
-  // Emoji'li beslenme türü listesi
-  final Map<String, String> dietTypesWithEmojis = {
-    'Dengeli': '⚖️',
-    'Vegan': '🌱',
-    'Vejetaryen': '🥗',
-    'Ketojenik': '🥑',
-    'Akdeniz Diyeti': '🫒',
-    'Yüksek Protein': '🥩',
-    'Düşük Karbonhidrat': '🥬',
-    'Şekersiz': '🚫',
-    'Karnivor': '🥩',
-  };
-  
-  // Emoji'li alerji listesi
-  final Map<String, String> allergiesWithEmojis = {
-    'Gluten': '🌾',
-    'Laktoz': '🥛',
-    'Yumurta': '🥚',
-    'Soya': '🫘',
-    'Fıstık': '🥜',
-    'Ceviz, Badem vb. (Ağaç Kuruyemişleri)': '🌰',
-    'Deniz Ürünleri (Balık, Kabuklular)': '🐟',
-    'Hardal': '🟡',
-    'Susam': '🌻',
-  };
-  
-  // "Diğer" seçenekleri için kontroller
+  // "Diğer" beslenme türü için değişkenler
   bool digerDiyetTuruSecili = false;
-  bool digerAlerjiSecili = false;
   final _digerDiyetTuruController = TextEditingController();
+
+  // Alerji değişkenleri 
+  final List<String> tumAlerjenler = [
+    'Gluten', 'Laktoz', 'Yumurta', 'Soya', 'Fıstık',
+    'Ceviz, Badem vb. (Ağaç Kuruyemişleri)', 'Deniz Ürünleri (Balık, Kabuklular)',
+    'Hardal', 'Susam'
+  ];
+  List<String> secilenAlerjiler = [];
+  bool digerAlerjiSecili = false;
   final _digerAlerjiController = TextEditingController();
 
   @override
@@ -169,494 +151,189 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          isLogin ? '🔐 Giriş Yap' : '📝 Kayıt Ol',
-          style: const TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: Text(isLogin ? 'Giriş Yap' : 'Kayıt Ol')),
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: ListView(
             children: [
-              // Başlık ve açıklama
+           
               if (!isLogin)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Column(
-                    children: [
-                      Text(
-                        '🍽️ SmartMeal\'e Hoş Geldiniz!',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Kişiselleştirilmiş beslenme deneyimi için bilgilerinizi paylaşın',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Ad Soyad'),
+                  onSaved: (val) => name = val ?? '',
+                  validator: (val) => val!.isEmpty ? 'Ad Soyad girin' : null,
                 ),
-              const SizedBox(height: 16),
-              
-              // Kişisel Bilgiler Kartı
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.person, color: Colors.blue),
-                          SizedBox(width: 8),
-                          Text('👤 Kişisel Bilgiler', 
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (!isLogin)
-                        TextFormField(
-                          decoration: const InputDecoration(
-                            labelText: 'Ad Soyad',
-                            prefixIcon: Icon(Icons.person_outline),
-                            border: OutlineInputBorder(),
-                          ),
-                          onSaved: (val) => name = val ?? '',
-                          validator: (val) => val!.isEmpty ? 'Ad Soyad girin' : null,
-                        ),
-                      if (!isLogin) const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'E-posta',
-                          prefixIcon: Icon(Icons.email_outlined),
-                          border: OutlineInputBorder(),
-                        ),
-                        onSaved: (val) => email = val ?? '',
-                        validator: (val) => val!.isEmpty ? 'E-posta girin' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Şifre',
-                          prefixIcon: Icon(Icons.lock_outline),
-                          border: OutlineInputBorder(),
-                        ),
-                        obscureText: true,
-                        onSaved: (val) => password = val ?? '',
-                        validator: (val) => val!.length < 6 ? 'En az 6 karakter' : null,
-                      ),
-                    ],
-                  ),
-                ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'E-posta'),
+                onSaved: (val) => email = val ?? '',
+                validator: (val) => val!.isEmpty ? 'E-posta girin' : null,
               ),
-              
-              // Fiziksel Bilgiler Kartı
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Şifre'),
+                obscureText: true,
+                onSaved: (val) => password = val ?? '',
+                validator: (val) => val!.length < 6 ? 'En az 6 karakter' : null,
+              ),
               if (!isLogin)
-                Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.fitness_center, color: Colors.green),
-                            SizedBox(width: 8),
-                            Text('📊 Fiziksel Bilgiler', 
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                decoration: const InputDecoration(
-                                  labelText: 'Yaş',
-                                  prefixIcon: Icon(Icons.cake_outlined),
-                                  border: OutlineInputBorder(),
-                                ),
-                                keyboardType: TextInputType.number,
-                                onSaved: (val) => age = int.tryParse(val ?? '') ?? 0,
-                                validator: (val) => val!.isEmpty ? 'Yaş girin' : null,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                value: gender,
-                                decoration: const InputDecoration(
-                                  labelText: 'Cinsiyet',
-                                  prefixIcon: Icon(Icons.person_outline),
-                                  border: OutlineInputBorder(),
-                                ),
-                                items: ['Erkek', 'Kadın'].map((g) => 
-                                  DropdownMenuItem(value: g, child: Text(g))).toList(),
-                                onChanged: (val) => setState(() => gender = val ?? 'Erkek'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                decoration: const InputDecoration(
-                                  labelText: 'Kilo (kg)',
-                                  prefixIcon: Icon(Icons.monitor_weight_outlined),
-                                  border: OutlineInputBorder(),
-                                ),
-                                keyboardType: TextInputType.number,
-                                onSaved: (val) => weight = double.tryParse(val ?? '') ?? 0,
-                                validator: (val) => val!.isEmpty ? 'Kilo girin' : null,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: TextFormField(
-                                decoration: const InputDecoration(
-                                  labelText: 'Boy (cm)',
-                                  prefixIcon: Icon(Icons.height_outlined),
-                                  border: OutlineInputBorder(),
-                                ),
-                                keyboardType: TextInputType.number,
-                                onSaved: (val) => height = double.tryParse(val ?? '') ?? 0,
-                                validator: (val) => val!.isEmpty ? 'Boy girin' : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Yaş'),
+                  keyboardType: TextInputType.number,
+                  onSaved: (val) => age = int.tryParse(val ?? '') ?? 0,
+                  validator: (val) => val!.isEmpty ? 'Yaş girin' : null,
+                ),
+              if (!isLogin)
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Kilo (kg)'),
+                  keyboardType: TextInputType.number,
+                  onSaved: (val) => weight = double.tryParse(val ?? '') ?? 0,
+                  validator: (val) => val!.isEmpty ? 'Kilo girin' : null,
+                ),
+              if (!isLogin)
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Boy (cm)'),
+                  keyboardType: TextInputType.number,
+                  onSaved: (val) => height = double.tryParse(val ?? '') ?? 0,
+                  validator: (val) => val!.isEmpty ? 'Boy girin' : null,
+                ),
+              if (!isLogin)
+                DropdownButtonFormField<String>(
+                  value: gender,
+                  items: ['Erkek', 'Kadın'].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
+                  onChanged: (val) => setState(() => gender = val ?? 'Erkek'),
+                  decoration: const InputDecoration(labelText: 'Cinsiyet'),
                 ),
 
-              // Modern Beslenme Tercihleri Bölümü
+              // --- DEĞİŞİKLİK 3: ARAYÜZÜ GÜNCELLEME ---
+              // Radyo butonları, çoklu seçim için onay kutuları ile değiştirildi.
               if (!isLogin)
-                Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.restaurant_menu, color: Colors.green),
-                        title: const Text('🍽️ Beslenme Tercihleri'),
-                        subtitle: secilenDiyetTurleri.isEmpty 
-                            ? const Text('Tercihlerinizi seçin')
-                            : Text('${secilenDiyetTurleri.length} seçenek seçildi'),
-                        trailing: Icon(isDietSectionExpanded ? Icons.expand_less : Icons.expand_more),
-                        onTap: () {
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    const Text('Beslenme Tercihleri:', style: TextStyle(fontSize: 16)),
+                    ...dietTypes.map((type) {
+                      return CheckboxListTile(
+                        title: Text(type),
+                        value: secilenDiyetTurleri.contains(type),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        onChanged: (bool? isChecked) {
                           setState(() {
-                            isDietSectionExpanded = !isDietSectionExpanded;
+                            if (isChecked == true) {
+                              secilenDiyetTurleri.add(type);
+                            } else {
+                              secilenDiyetTurleri.remove(type);
+                            }
                           });
                         },
-                      ),
-                      if (isDietSectionExpanded)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Beslenme türlerinizi seçin:', 
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                              const SizedBox(height: 8),
-                              ...dietTypesWithEmojis.entries.map((entry) {
-                                final type = entry.key;
-                                final emoji = entry.value;
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: secilenDiyetTurleri.contains(type) 
-                                        ? Colors.green.withOpacity(0.1)
-                                        : Colors.grey.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: CheckboxListTile(
-                                    title: Row(
-                                      children: [
-                                        Text(emoji, style: const TextStyle(fontSize: 18)),
-                                        const SizedBox(width: 8),
-                                        Text(type),
-                                      ],
-                                    ),
-                                    value: secilenDiyetTurleri.contains(type),
-                                    dense: true,
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                    onChanged: (bool? isChecked) {
-                                      setState(() {
-                                        if (isChecked == true) {
-                                          secilenDiyetTurleri.add(type);
-                                        } else {
-                                          secilenDiyetTurleri.remove(type);
-                                        }
-                                      });
-                                    },
-                                  ),
-                                );
-                              }),
-                              const SizedBox(height: 8),
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: digerDiyetTuruSecili 
-                                      ? Colors.orange.withOpacity(0.1)
-                                      : Colors.grey.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: CheckboxListTile(
-                                  title: const Row(
-                                    children: [
-                                      Text('✏️', style: TextStyle(fontSize: 18)),
-                                      SizedBox(width: 8),
-                                      Text('Diğer'),
-                                    ],
-                                  ),
-                                  value: digerDiyetTuruSecili,
-                                  dense: true,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                  onChanged: (bool? isChecked) {
-                                    setState(() {
-                                      digerDiyetTuruSecili = isChecked ?? false;
-                                    });
-                                  },
-                                ),
-                              ),
-                              if (digerDiyetTuruSecili)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: TextFormField(
-                                    controller: _digerDiyetTuruController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Lütfen belirtin',
-                                      border: OutlineInputBorder(),
-                                      isDense: true,
-                                    ),
-                                    validator: (val) {
-                                      if (digerDiyetTuruSecili && (val == null || val.isEmpty)) {
-                                        return 'Lütfen beslenme türünü belirtin';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                            ],
+                      );
+                    }),
+                    CheckboxListTile(
+                      title: const Text('Diğer'),
+                      value: digerDiyetTuruSecili,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (bool? isChecked) {
+                        setState(() {
+                          digerDiyetTuruSecili = isChecked ?? false;
+                        });
+                      },
+                    ),
+                    if (digerDiyetTuruSecili)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                        child: TextFormField(
+                          controller: _digerDiyetTuruController,
+                          decoration: const InputDecoration(
+                            labelText: 'Lütfen belirtin',
+                            isDense: true,
                           ),
+                          validator: (val) {
+                            if (digerDiyetTuruSecili && (val == null || val.isEmpty)) {
+                              return 'Lütfen beslenme türünü belirtin';
+                            }
+                            return null;
+                          },
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               
-              // Modern Alerjiler Bölümü
+              // Alerjiler bölümü 
               if (!isLogin)
-                Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.warning, color: Colors.orange),
-                        title: const Text('⚠️ Alerjileriniz'),
-                        subtitle: secilenAlerjiler.isEmpty 
-                            ? const Text('Varsa seçin (isteğe bağlı)')
-                            : Text('${secilenAlerjiler.length} alerji seçildi'),
-                        trailing: Icon(isAllergySectionExpanded ? Icons.expand_less : Icons.expand_more),
-                        onTap: () {
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    const Text('Alerjileriniz (Varsa seçin):', style: TextStyle(fontSize: 16)),
+                    ...tumAlerjenler.map((String tekBirAlerjen) {
+                      return CheckboxListTile(
+                        title: Text(tekBirAlerjen),
+                        value: secilenAlerjiler.contains(tekBirAlerjen),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        onChanged: (bool? secildiMi) {
                           setState(() {
-                            isAllergySectionExpanded = !isAllergySectionExpanded;
+                            if (secildiMi == true) {
+                              secilenAlerjiler.add(tekBirAlerjen);
+                            } else {
+                              secilenAlerjiler.remove(tekBirAlerjen);
+                            }
                           });
                         },
-                      ),
-                      if (isAllergySectionExpanded)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Alerjilerinizi seçin:', 
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                              const SizedBox(height: 8),
-                              ...allergiesWithEmojis.entries.map((entry) {
-                                final allergen = entry.key;
-                                final emoji = entry.value;
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: secilenAlerjiler.contains(allergen) 
-                                        ? Colors.orange.withOpacity(0.1)
-                                        : Colors.grey.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: CheckboxListTile(
-                                    title: Row(
-                                      children: [
-                                        Text(emoji, style: const TextStyle(fontSize: 18)),
-                                        const SizedBox(width: 8),
-                                        Expanded(child: Text(allergen)),
-                                      ],
-                                    ),
-                                    value: secilenAlerjiler.contains(allergen),
-                                    dense: true,
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                    onChanged: (bool? isChecked) {
-                                      setState(() {
-                                        if (isChecked == true) {
-                                          secilenAlerjiler.add(allergen);
-                                        } else {
-                                          secilenAlerjiler.remove(allergen);
-                                        }
-                                      });
-                                    },
-                                  ),
-                                );
-                              }),
-                              const SizedBox(height: 8),
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: digerAlerjiSecili 
-                                      ? Colors.red.withOpacity(0.1)
-                                      : Colors.grey.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: CheckboxListTile(
-                                  title: const Row(
-                                    children: [
-                                      Text('✏️', style: TextStyle(fontSize: 18)),
-                                      SizedBox(width: 8),
-                                      Text('Diğer'),
-                                    ],
-                                  ),
-                                  value: digerAlerjiSecili,
-                                  dense: true,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                  onChanged: (bool? isChecked) {
-                                    setState(() {
-                                      digerAlerjiSecili = isChecked ?? false;
-                                    });
-                                  },
-                                ),
-                              ),
-                              if (digerAlerjiSecili)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: TextFormField(
-                                    controller: _digerAlerjiController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Lütfen belirtin',
-                                      border: OutlineInputBorder(),
-                                      isDense: true,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                      );
+                    }).toList(),
+                    CheckboxListTile(
+                      title: const Text("Diğer"),
+                      value: digerAlerjiSecili,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (bool? isChecked) {
+                        setState(() {
+                          digerAlerjiSecili = isChecked ?? false;
+                        });
+                      },
+                    ),
+                    if (digerAlerjiSecili)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                        child: TextFormField(
+                          controller: _digerAlerjiController,
+                          decoration: const InputDecoration(labelText: 'Lütfen belirtin', isDense: true),
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               
               const SizedBox(height: 24),
-              
-              // Ana Giriş/Kayıt Butonu
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: Text(
-                    isLogin ? '🔐 Giriş Yap' : '📝 Kayıt Ol', 
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+              ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: Text(isLogin ? 'Giriş Yap' : 'Kayıt Ol', style: const TextStyle(fontSize: 16)),
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _signInWithGoogle,
+                icon: const Icon(Icons.account_circle, color: Colors.white),
+                label: const Text('Google ile Giriş Yap', style: TextStyle(color: Colors.white, fontSize: 16)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
-              
               const SizedBox(height: 16),
-              
-              // Ayırıcı
-              const Row(
-                children: [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('veya', style: TextStyle(color: Colors.grey)),
-                  ),
-                  Expanded(child: Divider()),
-                ],
+              TextButton(
+                onPressed: () => setState(() => isLogin = !isLogin),
+                child: Text(isLogin ? 'Hesabın yok mu? Kayıt Ol' : 'Zaten hesabın var mı? Giriş Yap'),
               ),
-              
-              const SizedBox(height: 16),
-              
-              // Google Giriş Butonu
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: _signInWithGoogle,
-                  icon: const Text('🔍', style: TextStyle(fontSize: 20)),
-                  label: const Text(
-                    'Google ile Giriş Yap', 
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Alt Metin Butonu
-              Center(
-                child: TextButton(
-                  onPressed: () => setState(() => isLogin = !isLogin),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
-                  child: Text(
-                    isLogin ? 'Hesabın yok mu? 📝 Kayıt Ol' : 'Zaten hesabın var mı? 🔐 Giriş Yap',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 16),
             ],
           ),
         ),
