@@ -14,10 +14,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // --- RENK PALETİ ---
-  final Color primaryColor = Colors.green.shade700;
-  final Color backgroundColor = Colors.grey.shade100;
-
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
@@ -58,11 +54,32 @@ class _ProfilePageState extends State<ProfilePage> {
 
   String? _bloodTestImageUrl;
   bool _isUploading = false;
+  
+  // Profil fotoğrafı için yeni değişkenler
+  String? _profileImageUrl;
+  int? _selectedAvatarIndex;
+  
+  // Hazır avatar seçenekleri
+  final List<String> _avatarOptions = [
+    'assets/avatars/avatar1.png',
+    'assets/avatars/avatar2.png',
+    'assets/avatars/avatar3.png',
+    'assets/avatars/avatar4.png',
+    'assets/avatars/avatar5.png',
+    'assets/avatars/avatar6.png',
+  ];
+  
+  // Sağlık durumu verileri
+  Map<String, dynamic> _healthData = {};
+  int _totalHealthScore = 0;
+  int _streakCount = 0;
+  String _currentRiskLevel = 'Bekliyor';
 
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+    _loadHealthData();
   }
 
   @override
@@ -77,8 +94,85 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
+  // Color getters
+  Color get primaryColor => Colors.red.shade700;
+  Color get backgroundColor => Colors.grey.shade50;
+
+  Future<void> _loadHealthData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Sağlık verilerini yükle
+        final surveySnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('health_surveys')
+            .orderBy('date', descending: true)
+            .limit(12)
+            .get();
+
+        if (mounted) {
+          final surveyHistory = surveySnapshot.docs.map((doc) => doc.data()).toList();
+          
+          // Sağlık skorunu hesapla
+          if (surveyHistory.isNotEmpty) {
+            final recentScores = surveyHistory.take(4).map((s) => s['risk_score'] ?? 0).toList();
+            if (recentScores.isNotEmpty) {
+              final averageRisk = recentScores.reduce((a, b) => a + b) / recentScores.length;
+              _totalHealthScore = (100 - averageRisk).round().clamp(0, 100);
+            }
+          }
+          
+          // Streak hesapla
+          _streakCount = 0;
+          final today = DateTime.now();
+          for (int i = 0; i < 12; i++) {
+            final checkDate = today.subtract(Duration(days: i * 7));
+            final weekString = '${checkDate.year}-W${_getWeekOfYear(checkDate)}';
+            final hasWeekSurvey = surveyHistory.any((survey) => survey['week'] == weekString);
+            
+            if (hasWeekSurvey) {
+              _streakCount++;
+            } else {
+              break;
+            }
+          }
+          
+          // Bu haftanın risk seviyesini kontrol et
+          final thisWeek = '${today.year}-W${_getWeekOfYear(today)}';
+          final currentWeekSurvey = surveyHistory.firstWhere(
+            (survey) => survey['week'] == thisWeek,
+            orElse: () => {},
+          );
+          
+          if (currentWeekSurvey.isNotEmpty) {
+            final riskScore = currentWeekSurvey['risk_score'] ?? 0;
+            _currentRiskLevel = _getRiskText(riskScore);
+          }
+          
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      print('Sağlık verileri yükleme hatası: $e');
+    }
+  }
+
+  int _getWeekOfYear(DateTime date) {
+    final firstDayOfYear = DateTime(date.year, 1, 1);
+    final daysSinceFirstDay = date.difference(firstDayOfYear).inDays;
+    return (daysSinceFirstDay / 7).ceil();
+  }
+
+  String _getRiskText(int riskScore) {
+    if (riskScore <= 20) return 'Çok Düşük Risk';
+    if (riskScore <= 40) return 'Düşük Risk';
+    if (riskScore <= 60) return 'Orta Risk';
+    if (riskScore <= 80) return 'Yüksek Risk';
+    return 'Çok Yüksek Risk';
+  }
+
   Future<void> _loadUserProfile() async {
-    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
@@ -95,6 +189,8 @@ class _ProfilePageState extends State<ProfilePage> {
             if (data['dietTypes'] != null) secilenDiyetTurleri = List<String>.from(data['dietTypes']);
             if (data['allergies'] is List) secilenAlerjiler = List<String>.from(data['allergies']);
             _bloodTestImageUrl = data['bloodTestImageUrl'];
+            _profileImageUrl = data['profileImageUrl'];
+            _selectedAvatarIndex = data['selectedAvatarIndex'];
             _isLoading = false;
           });
         } else if (mounted) {
@@ -152,6 +248,8 @@ class _ProfilePageState extends State<ProfilePage> {
           'dietTypes': secilenDiyetTurleri,
           'allergies': secilenAlerjiler,
           'activityLevel': _activityLevel,
+          'profileImageUrl': _profileImageUrl,
+          'selectedAvatarIndex': _selectedAvatarIndex,
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
@@ -186,6 +284,46 @@ class _ProfilePageState extends State<ProfilePage> {
     if (bmi < 25) return primaryColor;
     if (bmi < 30) return Colors.orange.shade600;
     return Colors.red.shade600;
+  }
+
+  // Avatar emoji metodu
+  String _getAvatarEmoji(int index) {
+    final avatars = ['👨‍💼', '👩‍💼', '🧑‍🎓', '👨‍⚕️', '👩‍⚕️', '🧑‍🍳', '👨‍🏫', '👩‍🏫'];
+    return avatars[index % avatars.length];
+  }
+
+  // Profil fotoğrafı seçme metodu
+  Future<void> _pickProfileImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (pickedFile != null) {
+        setState(() => _isUploading = true);
+        
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('profile_images')
+              .child('${user.uid}.jpg');
+          
+          await storageRef.putFile(File(pickedFile.path));
+          final downloadUrl = await storageRef.getDownloadURL();
+          
+          setState(() {
+            _profileImageUrl = downloadUrl;
+            _selectedAvatarIndex = null; // Avatar seçimini kaldır
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ErrorHandler.showError(context, 'Fotoğraf yüklenirken hata oluştu');
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
   }
 
   @override
@@ -256,6 +394,125 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 16),
             ],
+
+            // Avatar Seçimi Bölümü
+            _buildSectionCard(
+              title: '📸 Profil Fotoğrafı',
+              children: [
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        // Mevcut profil fotoğrafı
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: primaryColor, width: 3),
+                          ),
+                          child: ClipOval(
+                            child: _profileImageUrl != null
+                                ? Image.network(_profileImageUrl!, fit: BoxFit.cover)
+                                : _selectedAvatarIndex != null
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            colors: [primaryColor.withOpacity(0.1), primaryColor.withOpacity(0.3)],
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            _getAvatarEmoji(_selectedAvatarIndex!),
+                                            style: const TextStyle(fontSize: 40),
+                                          ),
+                                        ),
+                                      )
+                                    : Icon(Icons.person, size: 40, color: Colors.grey),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // Avatar seçenekleri
+                        const Text(
+                          'Avatar Seç',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                          ),
+                          itemCount: 8,
+                          itemBuilder: (context, index) {
+                            final isSelected = _selectedAvatarIndex == index;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedAvatarIndex = index;
+                                  _profileImageUrl = null; // Özel fotoğrafı kaldır
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isSelected ? primaryColor : Colors.grey.shade300,
+                                    width: isSelected ? 3 : 1,
+                                  ),
+                                  gradient: isSelected
+                                      ? LinearGradient(
+                                          colors: [primaryColor.withOpacity(0.1), primaryColor.withOpacity(0.3)],
+                                        )
+                                      : null,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _getAvatarEmoji(index),
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      color: isSelected ? primaryColor : Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // Özel fotoğraf yükleme
+                        const Divider(),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: _pickProfileImage,
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('Özel Fotoğraf Yükle'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor.withOpacity(0.1),
+                            foregroundColor: primaryColor,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
 
             _buildSectionCard(
               title: '👤 Kişisel Bilgiler',
