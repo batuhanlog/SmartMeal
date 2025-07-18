@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'services/gemini_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class FoodPhotoPage extends StatefulWidget {
   const FoodPhotoPage({super.key});
@@ -18,6 +19,7 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
   final Color backgroundColor = Colors.grey.shade100;
 
   File? _imageFile;
+  Uint8List? _imageBytes;
   bool _isAnalyzing = false;
   Map<String, dynamic>? _analysisResult;
   final ImagePicker _picker = ImagePicker();
@@ -41,21 +43,42 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
   }
 
   Future<void> _pickFromGallery() async {
-    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
       if (image != null) {
-        setState(() {
-          _imageFile = File(image.path);
-          _analysisResult = null;
-        });
+        if (kIsWeb) {
+          // Web platformunda: Uint8List ile gösterim
+          final bytes = await image.readAsBytes();
+          setState(() {
+            _imageBytes = bytes;
+            _imageFile = null; // Web'de file kullanılmaz
+            _analysisResult = null;
+          });
+        } else {
+          // Mobil/masaüstü platformlarında: File ile gösterim
+          setState(() {
+            _imageFile = File(image.path);
+            _imageBytes = null;
+            _analysisResult = null;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Galeri erişim hatası: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Galeri erişim hatası: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
+
 
   Future<void> _analyzeFood() async {
     // ... Bu fonksiyonun içeriği aynı kalıyor ...
@@ -121,7 +144,7 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
             const SizedBox(height: 8),
             Text('Güven: ${(confidence * 100).toInt()}%', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
             const SizedBox(height: 16),
-            
+
             if (result['analysis'] != null && result['analysis'].isNotEmpty) ...[
               Text('AI Analizi', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: primaryColor)),
               const SizedBox(height: 8),
@@ -136,7 +159,7 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
               ),
               const SizedBox(height: 16),
             ],
-            
+
             Text('Besin Değerleri', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
@@ -149,10 +172,10 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
               ],
             ),
             const SizedBox(height: 16),
-            
+
             Text('Beslenme Önerileri', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: primaryColor)),
             const SizedBox(height: 8),
-            ...((result['recommendations'] as List<dynamic>).cast<String>().map((rec) => 
+            ...((result['recommendations'] as List<dynamic>).cast<String>().map((rec) =>
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
@@ -165,9 +188,9 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
                 ),
               ),
             )),
-            
+
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
                 Expanded(
@@ -274,17 +297,22 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
               ),
               child: _imageFile != null
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.file(_imageFile!, fit: BoxFit.cover),
-                    )
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(_imageFile!, fit: BoxFit.cover),
+              )
+                  : _imageBytes != null
+                  ? ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.memory(_imageBytes!, fit: BoxFit.cover),
+              )
                   : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_a_photo_outlined, size: 64, color: Colors.grey.shade400),
-                        const SizedBox(height: 16),
-                        Text('Yemek fotoğrafı ekleyin', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
-                      ],
-                    ),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_a_photo_outlined, size: 64, color: Colors.grey.shade400),
+                  const SizedBox(height: 16),
+                  Text('Yemek fotoğrafı ekleyin', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
+                ],
+              ),
             ),
 
             Padding(
