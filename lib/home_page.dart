@@ -24,13 +24,17 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic>? userProfile;
   bool isLoading = true;
 
+  // --- RENK PALETİ TANIMLAMALARI ---
+  final Color primaryColor = Colors.green.shade800;
+  final Color secondaryColor = Colors.green.shade600;
+  final Color backgroundColor = Colors.grey.shade100;
+
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
   }
 
-  // --- DÜZELTİLMİŞ FONKSİYON ---
   Future<void> _loadUserProfile() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -40,27 +44,24 @@ class _HomePageState extends State<HomePage> {
             .doc(user.uid)
             .get();
         
-        // setState çağırmadan önce widget'ın hala ekranda olduğunu (mounted) kontrol et.
         if (mounted && doc.exists) {
           setState(() {
             userProfile = doc.data();
             isLoading = false;
           });
+        } else if (mounted) {
+          setState(() => isLoading = false);
         }
       }
     } catch (e) {
-      // Hata durumunda da aynı kontrolü yap.
       if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading = false);
       }
     }
   }
 
   Future<void> _logout() async {
     try {
-      // Google Sign-In ile giriş yapılmışsa onu da çıkış yap
       await GoogleSignInService.signOut();
       
       if (mounted) {
@@ -73,10 +74,7 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       if (mounted) {
-        ErrorHandler.showError(
-          context, 
-          'Çıkış yapılırken hata oluştu',
-        );
+        ErrorHandler.showError(context, 'Çıkış yapılırken hata oluştu');
       }
     }
   }
@@ -99,21 +97,23 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: primaryColor)),
       );
     }
 
     final bmi = _calculateBMI();
+    final dietTypes = userProfile?['dietTypes'] as List? ?? [];
+    final dietTypesText = dietTypes.isNotEmpty ? dietTypes.join(', ') : '-';
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'Hoşgeldin, ${userProfile?['name'] ?? 'Kullanıcı'} 👋',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: primaryColor, // Değiştirildi
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -122,7 +122,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ProfilePage()),
-              ).then((_) => _loadUserProfile()); // Profil güncellendiğinde yenile
+              ).then((_) => _loadUserProfile());
             },
             icon: const Icon(Icons.person),
             tooltip: 'Profil',
@@ -167,27 +167,22 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Welcome header
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.blue, Colors.blue.shade300],
+                  colors: [primaryColor, secondaryColor], // Değiştirildi
                 ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.restaurant,
-                      size: 48,
-                      color: Colors.white,
-                    ),
+                    Image.asset('assets/smeal_icon.png', height: 48, errorBuilder: (context, error, stackTrace) => Icon(Icons.restaurant, size: 48, color: Colors.white)),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       '🍽️ Sağlıklı Beslenme Asistanın',
                       style: TextStyle(
                         fontSize: 20,
@@ -215,7 +210,6 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Profil Kartı
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(
@@ -228,16 +222,12 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                Icons.person,
-                                color: Colors.blue,
-                                size: 24,
-                              ),
+                              Icon(Icons.person, color: primaryColor, size: 24), // Değiştirildi
                               const SizedBox(width: 8),
                               Text(
                                 'Profil Bilgilerin',
                                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  color: Colors.blue.shade700,
+                                  color: primaryColor, // Değiştirildi
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -247,39 +237,35 @@ class _HomePageState extends State<HomePage> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
+                              color: Colors.green.shade50, // Değiştirildi
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Column(
+                            child: Row(
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          _buildProfileItem(Icons.cake, 'Yaş', '${userProfile?['age'] ?? '-'}'),
-                                          const SizedBox(height: 8),
-                                          _buildProfileItem(Icons.monitor_weight, 'Kilo', '${userProfile?['weight'] ?? '-'} kg'),
-                                          const SizedBox(height: 8),
-                                          _buildProfileItem(Icons.height, 'Boy', '${userProfile?['height'] ?? '-'} cm'),
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          _buildProfileItem(Icons.person_outline, 'Cinsiyet', '${userProfile?['gender'] ?? '-'}'),
-                                          const SizedBox(height: 8),
-                                          _buildProfileItem(Icons.restaurant, 'Beslenme', '${userProfile?['dietType'] ?? '-'}'),
-                                          const SizedBox(height: 8),
-                                          if (bmi > 0)
-                                            _buildProfileItem(Icons.analytics, 'BMI', '${bmi.toStringAsFixed(1)} (${_getBMICategory(bmi)})'),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildProfileItem(Icons.cake, 'Yaş', '${userProfile?['age'] ?? '-'}'),
+                                      const SizedBox(height: 8),
+                                      _buildProfileItem(Icons.monitor_weight, 'Kilo', '${userProfile?['weight'] ?? '-'} kg'),
+                                      const SizedBox(height: 8),
+                                      _buildProfileItem(Icons.height, 'Boy', '${userProfile?['height'] ?? '-'} cm'),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildProfileItem(Icons.person_outline, 'Cinsiyet', '${userProfile?['gender'] ?? '-'}'),
+                                      const SizedBox(height: 8),
+                                      _buildProfileItem(Icons.restaurant, 'Beslenme', dietTypesText),
+                                      const SizedBox(height: 8),
+                                      if (bmi > 0)
+                                        _buildProfileItem(Icons.analytics, 'BMI', '${bmi.toStringAsFixed(1)} (${_getBMICategory(bmi)})'),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -291,7 +277,6 @@ class _HomePageState extends State<HomePage> {
                   
                   const SizedBox(height: 24),
                   
-                  // Ana Menü Başlığı
                   Text(
                     '🚀 Ana Menü',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -301,61 +286,42 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Yemek Önerisi Butonu
                   _buildMenuButton(
                     icon: Icons.restaurant_menu,
                     title: 'Kişisel Yemek Önerisi',
                     subtitle: 'AI ile size özel sağlıklı tarifler',
-                    color: Colors.green,
+                    color: Colors.green.shade700, // Değiştirildi
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MealSuggestionPage(),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const MealSuggestionPage()));
                     },
                   ),
                   
                   const SizedBox(height: 12),
                   
-                  // Fotoğraf Analizi Butonu
                   _buildMenuButton(
                     icon: Icons.camera_alt,
                     title: 'Yemeği Analiz Et',
                     subtitle: 'Fotoğrafla besin değeri ve sağlık analizi',
-                    color: Colors.indigo,
+                    color: Colors.teal.shade700, // Değiştirildi
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const FoodPhotoPage(),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const FoodPhotoPage()));
                     },
                   ),
                   
                   const SizedBox(height: 12),
                   
-                  // Malzeme Bazlı Tarif Butonu
                   _buildMenuButton(
                     icon: Icons.kitchen,
                     title: 'Elimdekiler ile Tarifler',
                     subtitle: 'Malzemelerinizle yapabileceğiniz yemekler',
-                    color: Colors.orange,
+                    color: Colors.orange.shade700, // Değiştirildi
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const IngredientsRecipePage(),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const IngredientsRecipePage()));
                     },
                   ),
                   
                   const SizedBox(height: 16),
                   
-                  // Sağlık Takibi Başlığı
                   Text(
                     '💪 Sağlık Takibi',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -365,7 +331,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Su Tüketimi ve Adım Sayar Row
                   Row(
                     children: [
                       Expanded(
@@ -373,14 +338,9 @@ class _HomePageState extends State<HomePage> {
                           icon: Icons.water_drop,
                           title: 'Su Takibi',
                           subtitle: 'Günlük su tüketimi',
-                          color: Colors.blue,
+                          color: Colors.blue.shade600, // Değiştirildi
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const WaterTrackingPage(),
-                              ),
-                            );
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const WaterTrackingPage()));
                           },
                         ),
                       ),
@@ -390,14 +350,9 @@ class _HomePageState extends State<HomePage> {
                           icon: Icons.directions_walk,
                           title: 'Adım Sayar',
                           subtitle: 'Günlük aktivite',
-                          color: Colors.green,
+                          color: Colors.green.shade700, // Değiştirildi
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const StepCounterPage(),
-                              ),
-                            );
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const StepCounterPage()));
                           },
                         ),
                       ),
@@ -406,19 +361,13 @@ class _HomePageState extends State<HomePage> {
                   
                   const SizedBox(height: 16),
                   
-                  // Yemek Geçmişi Butonu
                   _buildMenuButton(
                     icon: Icons.history,
                     title: 'Yemek Geçmişim',
                     subtitle: 'Geçmiş önerileriniz ve favori yemekleriniz',
-                    color: Colors.purple,
+                    color: Colors.blueGrey.shade700, // Değiştirildi
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MealHistoryPage(),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const MealHistoryPage()));
                     },
                   ),
                   
@@ -435,7 +384,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildProfileItem(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.blue.shade600),
+        Icon(icon, size: 16, color: primaryColor), // Değiştirildi
         const SizedBox(width: 6),
         Text(
           '$label: ',
@@ -444,11 +393,14 @@ class _HomePageState extends State<HomePage> {
             color: Colors.grey.shade600,
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
