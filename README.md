@@ -2,7 +2,7 @@
 # Takım Bilgileri 
 
 ## Takım İsmi / Ürün İsmi  
-**Yapay Zeka78 / SMART MEAL**
+**Yapay Zeka78 / SMEAL**
 
 ## Takım Üyeleri  
 - **Batuhan Kayahan** – Product Owner _(aktif)_  
@@ -24,13 +24,13 @@ EXCEL SPREADSHEET ->  https://docs.google.com/spreadsheets/d/1oJFwlWX4NKyk2JQHON
 
 Günümüzde beslenme, kişisel sağlık yönetiminin temel taşlarından biri haline gelmiştir. Ancak insanlar, ellerindeki malzemelerle sağlıklı ve dengeli bir öğün hazırlamakta, ya da yediklerinin kendi sağlık verilerine uygun olup olmadığını anlamakta zorlanmaktadır.
 
-**SmartMeal**, bu soruna yapay zekâ destekli kişiselleştirilmiş bir çözüm sunar.
+**SMeal**, bu soruna yapay zekâ destekli kişiselleştirilmiş bir çözüm sunar.
 
 Kullanıcının beslenme tipi (örneğin vegan, ketojenik), alerjileri, sağlık hedefleri (zayıflama, kas kazanımı vb.) gibi verileri doğrultusunda, her gün kendisine özel yemek önerileri sunar.
 
 Ayrıca kullanıcı, sadece elindeki malzemeleri yazarak ya da seçerek, sistemin kendisine en uygun ve sağlıklı yemeği önermesini sağlayabilir. Yapay zekâ, görseli analiz ederek besin içeriklerini ve sağlık açısından uygunluğunu da değerlendirir.
 
-Minimalist ve kullanıcı dostu tasarımı ile SmartMeal, kişisel sağlıkla uyumlu bir yaşam tarzı benimsemek isteyen herkes için hem pratik bir asistan hem de motive edici bir rehber olmayı hedefler.
+Minimalist ve kullanıcı dostu tasarımı ile SMeal, kişisel sağlıkla uyumlu bir yaşam tarzı benimsemek isteyen herkes için hem pratik bir asistan hem de motive edici bir rehber olmayı hedefler.
 
 </details>
 ---
@@ -118,7 +118,7 @@ Tüm sayfalar arasında hızlı ve sezgisel geçiş için Flutter navigasyon sis
 <details open>
 <summary><strong>Kullanıcı Grupları</strong></summary>
 
-**SmartMeal** uygulaması, farklı yaş gruplarından ve yaşam tarzlarından bireylere hitap eden, sağlık odaklı bir çözüm sunar.  
+**SMeal** uygulaması, farklı yaş gruplarından ve yaşam tarzlarından bireylere hitap eden, sağlık odaklı bir çözüm sunar.  
 Hem bireysel hem de toplu kullanımda fayda sağlayabilecek kapsamlı bir yapıya sahiptir.
 
 ---
@@ -178,7 +178,7 @@ Tariflerdeki içerikler diyete göre otomatik olarak uyarlanır.
 **Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
 
 **Puan tamamlama mantığı:**  
-SMART MEAL toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 1’de temel altyapı, kullanıcı girişi, profil oluşturma, veri bağlantıları ve navigasyon sistemleri geliştirildiği için bu sprintin yükü 100 puan olarak belirlenmiştir. Her bir sprintte eşit bir ağırlıklandırmanın iş bölümü açısından adil olacağına karar verilmiştir.
+SMEAL toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 1’de temel altyapı, kullanıcı girişi, profil oluşturma, veri bağlantıları ve navigasyon sistemleri geliştirildiği için bu sprintin yükü 100 puan olarak belirlenmiştir. Her bir sprintte eşit bir ağırlıklandırmanın iş bölümü açısından adil olacağına karar verilmiştir.
 
 </details>
 
@@ -293,7 +293,7 @@ Burndown chart aşağıda verilmiştir:
 **Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
 
 **Puan tamamlama mantığı:**  
-SMART MEAL toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 2’de yeni özelliklerin geliştirilmesi, entegrasyonlarının sağlanması ve farklılık sağlayacak yenilikçi bakış açılarının artırılması hedeflenmiştir. Her bir sprintte eşit bir ağırlıklandırmanın iş bölümü açısından adil olacağına karar verilmiştir.
+SMEAL toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 2’de yeni özelliklerin geliştirilmesi, entegrasyonlarının sağlanması ve farklılık sağlayacak yenilikçi bakış açılarının artırılması hedeflenmiştir. Her bir sprintte eşit bir ağırlıklandırmanın iş bölümü açısından adil olacağına karar verilmiştir.
 
 </details>
 
@@ -330,7 +330,7 @@ Geçtiğimiz sprintte belirlenmiş olan proje yönetim aracı **TRELLO**, bu spr
 <details>
 <summary><strong> Sprint Review</strong></summary>
 
-- Uygulama isminin Smart Meal'dan Smeal olarak güncellenmesi  
+- Uygulama isminin SMeal'dan Smeal olarak güncellenmesi  
 - Logonun ve uygulama iconunun güncellenmesi  
 - Kayıt ekranı, Giriş ekranı, Ana sayfa, Profil ekranı UI tasarımı yenilendi  
 - “Elimdeki Malzemelerle Tarif” ekranına AI entegrasyonu yapıldı  
