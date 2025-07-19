@@ -295,8 +295,7 @@ Burndown chart aşağıda verilmiştir:
 **Puan tamamlama mantığı:**  
 SMART MEAL toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 2’de yeni özelliklerin geliştirilmesi, entegrasyonlarının sağlanması ve farklılık sağlayacak yenilikçi bakış açılarının artırılması hedeflenmiştir. Her bir sprintte eşit bir ağırlıklandırmanın iş bölümü açısından adil olacağına karar verilmiştir.
 
-<details>
-
+</details>
 
 <details>
 <summary><strong> Daily Scrum Toplantıları</strong></summary>
@@ -306,5 +305,3 @@ Daily Scrum toplantıları, ekip üyelerinin okul ve iş yoğunlukları göz ön
 Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli dokümanlar aşağıdaki linke eklenmiştir.
 
 </details>
-
-
