@@ -14,72 +14,61 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  // --- Tutarlı Tema ve Stil Sabitleri ---
+  static const Color _primaryColor = Color(0xFF1B5E20); // Koyu Yeşil Tema
+  static const Color _backgroundColor = Color(0xFFF8F9FA);
+  static const Color _cardColor = Colors.white;
+  static const Color _textColor = Color(0xFF343A40);
+  static const Color _subtleTextColor = Color(0xFF6C757D);
+
+  // Form ve Controller'lar
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
-  final _allergiesController = TextEditingController();
+  final _digerDiyetTuruController = TextEditingController();
+  final _digerAlerjiController = TextEditingController();
 
+  // Durum Değişkenleri
+  bool _isLoading = true;
+  bool _isSaving = false;
+  bool _isUploading = false;
+
+  // Profil Verileri
   List<String> secilenDiyetTurleri = [];
   List<String> secilenAlerjiler = [];
+  bool digerDiyetTuruSecili = false;
+  bool digerAlerjiSecili = false;
+  String _gender = 'Erkek';
+  String _activityLevel = 'Orta';
+  String? _profileImageUrl;
+  int? _selectedAvatarIndex;
+  String? _bloodTestImageUrl;
 
-  bool isDietSectionExpanded = false;
-  bool isAllergySectionExpanded = false;
-
+  // Sağlık Verileri
+  int _totalHealthScore = 0;
+  int _streakCount = 0;
+  String _currentRiskLevel = 'Bekliyor';
+  
+  // Sabit Listeler
+  final List<String> _genderOptions = ['Erkek', 'Kadın', 'Belirtmek istemiyorum'];
+  final List<String> _activityLevels = ['Düşük', 'Orta', 'Yüksek', 'Çok Yüksek'];
   final Map<String, String> dietTypesWithEmojis = {
     'Dengeli': '⚖️', 'Vegan': '🌱', 'Vejetaryen': '🥗', 'Ketojenik': '🥑',
     'Akdeniz Diyeti': '🫒', 'Yüksek Protein': '🥩', 'Düşük Karbonhidrat': '🥬',
     'Şekersiz': '🚫', 'Karnivor': '🥩',
   };
-
   final Map<String, String> allergiesWithEmojis = {
     'Gluten': '🌾', 'Laktoz': '🥛', 'Yumurta': '🥚', 'Soya': '🫘', 'Fıstık': '🥜',
-    'Ceviz, Badem vb. (Ağaç Kuruyemişleri)': '🌰', 'Deniz Ürünleri (Balık, Kabuklular)': '🐟',
-    'Hardal': '🟡', 'Susam': '🌻',
+    'Ceviz, Badem vb.': '🌰', 'Deniz Ürünleri': '🐟',
   };
-
-  bool digerDiyetTuruSecili = false;
-  bool digerAlerjiSecili = false;
-  final _digerDiyetTuruController = TextEditingController();
-  final _digerAlerjiController = TextEditingController();
-
-  String _gender = 'Erkek';
-  String _activityLevel = 'Orta';
-  bool _isLoading = true;
-  bool _isSaving = false;
-
-  final List<String> _genderOptions = ['Erkek', 'Kadın', 'Belirtmek istemiyorum'];
-  final List<String> _activityLevels = ['Düşük', 'Orta', 'Yüksek', 'Çok Yüksek'];
-
-  String? _bloodTestImageUrl;
-  bool _isUploading = false;
+  final List<String> _avatarEmojis = ['👨‍💼', '👩‍💼', '🧑‍🎓', '👨‍⚕️', '👩‍⚕️', '🧑‍🍳', '👨‍🏫', '👩‍🏫'];
   
-  // Profil fotoğrafı için yeni değişkenler
-  String? _profileImageUrl;
-  int? _selectedAvatarIndex;
-  
-  // Hazır avatar seçenekleri
-  final List<String> _avatarOptions = [
-    'assets/avatars/avatar1.png',
-    'assets/avatars/avatar2.png',
-    'assets/avatars/avatar3.png',
-    'assets/avatars/avatar4.png',
-    'assets/avatars/avatar5.png',
-    'assets/avatars/avatar6.png',
-  ];
-  
-  // Sağlık durumu verileri
-  Map<String, dynamic> _healthData = {};
-  int _totalHealthScore = 0;
-  int _streakCount = 0;
-  String _currentRiskLevel = 'Bekliyor';
-
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
-    _loadHealthData();
+    _loadAllData();
   }
 
   @override
@@ -88,21 +77,48 @@ class _ProfilePageState extends State<ProfilePage> {
     _ageController.dispose();
     _weightController.dispose();
     _heightController.dispose();
-    _allergiesController.dispose();
     _digerDiyetTuruController.dispose();
     _digerAlerjiController.dispose();
     super.dispose();
   }
 
-  // Color getters
-  Color get primaryColor => Colors.red.shade700;
-  Color get backgroundColor => Colors.grey.shade50;
+  // --- Mantıksal Fonksiyonlar ---
+  Future<void> _loadAllData() async {
+    setState(() => _isLoading = true);
+    await _loadUserProfile();
+    await _loadHealthData();
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (mounted && doc.exists) {
+          final data = doc.data()!;
+          _nameController.text = data['name'] ?? '';
+          _ageController.text = (data['age'] ?? '').toString();
+          _weightController.text = (data['weight'] ?? '').toString();
+          _heightController.text = (data['height'] ?? '').toString();
+          _gender = data['gender'] ?? 'Erkek';
+          _activityLevel = data['activityLevel'] ?? 'Orta';
+          secilenDiyetTurleri = List<String>.from(data['dietTypes'] ?? []);
+          secilenAlerjiler = List<String>.from(data['allergies'] ?? []);
+          _profileImageUrl = data['profileImageUrl'];
+          _selectedAvatarIndex = data['selectedAvatarIndex'];
+          _bloodTestImageUrl = data['bloodTestImageUrl'];
+        }
+      }
+    } catch (e) {
+      if (mounted) ErrorHandler.showError(context, 'Profil bilgileri yüklenirken hata oluştu');
+    }
+  }
 
   Future<void> _loadHealthData() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Sağlık verilerini yükle
         final surveySnapshot = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -114,31 +130,27 @@ class _ProfilePageState extends State<ProfilePage> {
         if (mounted) {
           final surveyHistory = surveySnapshot.docs.map((doc) => doc.data()).toList();
           
-          // Sağlık skorunu hesapla
           if (surveyHistory.isNotEmpty) {
-            final recentScores = surveyHistory.take(4).map((s) => s['risk_score'] ?? 0).toList();
+            final recentScores = surveyHistory.take(4).map((s) => (s['risk_score'] as num?)?.toInt() ?? 0).toList();
             if (recentScores.isNotEmpty) {
               final averageRisk = recentScores.reduce((a, b) => a + b) / recentScores.length;
               _totalHealthScore = (100 - averageRisk).round().clamp(0, 100);
             }
           }
           
-          // Streak hesapla
           _streakCount = 0;
           final today = DateTime.now();
+          final uniqueWeeks = surveyHistory.map((s) => s['week']).toSet();
           for (int i = 0; i < 12; i++) {
             final checkDate = today.subtract(Duration(days: i * 7));
             final weekString = '${checkDate.year}-W${_getWeekOfYear(checkDate)}';
-            final hasWeekSurvey = surveyHistory.any((survey) => survey['week'] == weekString);
-            
-            if (hasWeekSurvey) {
+            if (uniqueWeeks.contains(weekString)) {
               _streakCount++;
             } else {
               break;
             }
           }
           
-          // Bu haftanın risk seviyesini kontrol et
           final thisWeek = '${today.year}-W${_getWeekOfYear(today)}';
           final currentWeekSurvey = surveyHistory.firstWhere(
             (survey) => survey['week'] == thisWeek,
@@ -146,11 +158,9 @@ class _ProfilePageState extends State<ProfilePage> {
           );
           
           if (currentWeekSurvey.isNotEmpty) {
-            final riskScore = currentWeekSurvey['risk_score'] ?? 0;
+            final riskScore = (currentWeekSurvey['risk_score'] as num?)?.toInt() ?? 0;
             _currentRiskLevel = _getRiskText(riskScore);
           }
-          
-          setState(() {});
         }
       }
     } catch (e) {
@@ -158,79 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  int _getWeekOfYear(DateTime date) {
-    final firstDayOfYear = DateTime(date.year, 1, 1);
-    final daysSinceFirstDay = date.difference(firstDayOfYear).inDays;
-    return (daysSinceFirstDay / 7).ceil();
-  }
-
-  String _getRiskText(int riskScore) {
-    if (riskScore <= 20) return 'Çok Düşük Risk';
-    if (riskScore <= 40) return 'Düşük Risk';
-    if (riskScore <= 60) return 'Orta Risk';
-    if (riskScore <= 80) return 'Yüksek Risk';
-    return 'Çok Yüksek Risk';
-  }
-
-  Future<void> _loadUserProfile() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        if (mounted && doc.exists) {
-          final data = doc.data()!;
-          setState(() {
-            _nameController.text = data['name'] ?? '';
-            _ageController.text = (data['age'] ?? '').toString();
-            _weightController.text = (data['weight'] ?? '').toString();
-            _heightController.text = (data['height'] ?? '').toString();
-            _gender = data['gender'] ?? 'Erkek';
-            _activityLevel = data['activityLevel'] ?? 'Orta';
-            if (data['dietTypes'] != null) secilenDiyetTurleri = List<String>.from(data['dietTypes']);
-            if (data['allergies'] is List) secilenAlerjiler = List<String>.from(data['allergies']);
-            _bloodTestImageUrl = data['bloodTestImageUrl'];
-            _profileImageUrl = data['profileImageUrl'];
-            _selectedAvatarIndex = data['selectedAvatarIndex'];
-            _isLoading = false;
-          });
-        } else if (mounted) {
-          setState(() => _isLoading = false);
-        }
-      }
-    } catch (e) {
-      if(mounted){
-        setState(() => _isLoading = false);
-        ErrorHandler.showError(context, 'Profil bilgileri yüklenirken hata oluştu');
-      }
-    }
-  }
-
-  Future<void> _pickAndUploadBloodTest() async {
-    // ... Bu fonksiyonun içeriği aynı kalıyor ...
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
-    setState(() => _isUploading = true);
-    try {
-      final user = FirebaseAuth.instance.currentUser!;
-      final file = File(pickedFile.path);
-      final ref = FirebaseStorage.instance.ref().child('blood_tests').child('${user.uid}.jpg');
-      await ref.putFile(file);
-      final downloadUrl = await ref.getDownloadURL();
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'bloodTestImageUrl': downloadUrl});
-      if (mounted) {
-        setState(() => _bloodTestImageUrl = downloadUrl);
-        ErrorHandler.showSuccess(context, 'Kan tahlili başarıyla yüklendi!');
-      }
-    } catch (e) {
-      if (mounted) ErrorHandler.showError(context, 'Dosya yüklenirken bir hata oluştu.');
-    } finally {
-      if (mounted) setState(() => _isUploading = false);
-    }
-  }
-
   Future<void> _saveProfile() async {
-    // ... Bu fonksiyonun içeriği aynı kalıyor ...
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
     try {
@@ -264,522 +202,405 @@ class _ProfilePageState extends State<ProfilePage> {
       if(mounted) setState(() => _isSaving = false);
     }
   }
-
-  double _calculateBMI() {
-    final weight = double.tryParse(_weightController.text) ?? 0;
-    final height = double.tryParse(_heightController.text) ?? 0;
-    if (height == 0) return 0;
-    return weight / ((height / 100) * (height / 100));
-  }
-
-  String _getBMICategory(double bmi) {
-    if (bmi < 18.5) return 'Zayıf';
-    if (bmi < 25) return 'Normal';
-    if (bmi < 30) return 'Fazla Kilolu';
-    return 'Obez';
-  }
   
-  Color _getBMIColor(double bmi) {
-    if (bmi < 18.5) return Colors.blue.shade400;
-    if (bmi < 25) return primaryColor;
-    if (bmi < 30) return Colors.orange.shade600;
-    return Colors.red.shade600;
-  }
-
-  // Avatar emoji metodu
-  String _getAvatarEmoji(int index) {
-    final avatars = ['👨‍💼', '👩‍💼', '🧑‍🎓', '👨‍⚕️', '👩‍⚕️', '🧑‍🍳', '👨‍🏫', '👩‍🏫'];
-    return avatars[index % avatars.length];
-  }
-
-  // Profil fotoğrafı seçme metodu
   Future<void> _pickProfileImage() async {
     try {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
       
       if (pickedFile != null) {
         setState(() => _isUploading = true);
+        final user = FirebaseAuth.instance.currentUser!;
+        final storageRef = FirebaseStorage.instance.ref().child('profile_images').child('${user.uid}.jpg');
+        await storageRef.putFile(File(pickedFile.path));
+        final downloadUrl = await storageRef.getDownloadURL();
         
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          final storageRef = FirebaseStorage.instance
-              .ref()
-              .child('profile_images')
-              .child('${user.uid}.jpg');
-          
-          await storageRef.putFile(File(pickedFile.path));
-          final downloadUrl = await storageRef.getDownloadURL();
-          
+        if (mounted) {
           setState(() {
             _profileImageUrl = downloadUrl;
-            _selectedAvatarIndex = null; // Avatar seçimini kaldır
+            _selectedAvatarIndex = null;
           });
         }
       }
     } catch (e) {
-      if (mounted) {
-        ErrorHandler.showError(context, 'Fotoğraf yüklenirken hata oluştu');
-      }
+      if (mounted) ErrorHandler.showError(context, 'Fotoğraf yüklenirken hata oluştu');
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
   }
 
+  Future<void> _pickAndUploadBloodTest() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+    setState(() => _isUploading = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final file = File(pickedFile.path);
+      final ref = FirebaseStorage.instance.ref().child('blood_tests').child('${user.uid}.jpg');
+      await ref.putFile(file);
+      final downloadUrl = await ref.getDownloadURL();
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'bloodTestImageUrl': downloadUrl});
+      if (mounted) {
+        setState(() => _bloodTestImageUrl = downloadUrl);
+        ErrorHandler.showSuccess(context, 'Kan tahlili başarıyla yüklendi!');
+      }
+    } catch (e) {
+      if (mounted) ErrorHandler.showError(context, 'Dosya yüklenirken bir hata oluştu.');
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+  // --- UI Widget'ları ---
+  
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator(color: primaryColor)),
+      return const Scaffold(
+        backgroundColor: _backgroundColor,
+        body: Center(child: CircularProgressIndicator(color: _primaryColor)),
       );
     }
 
-    final bmi = _calculateBMI();
-
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: const Text('Profil Düzenle'),
-        backgroundColor: primaryColor,
-        foregroundColor: const Color.fromARGB(255, 255, 255, 255),
-        actions: [
-          if (_isSaving)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: 20, height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-            )
-          else
-            TextButton(
-              onPressed: _saveProfile,
-              child: const Text(
-                'Kaydet',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
+      backgroundColor: _backgroundColor,
+      body: SafeArea(
+        child: Column(
           children: [
-            if (bmi > 0) ...[
-              Card(
-                // --- DEĞİŞTİRİLEN KISIM ---
-                color: const Color.fromARGB(211, 250, 255, 247),
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                // --- DEĞİŞİKLİK SONU ---
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text('📊 BMI Durumunuz', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _getBMIColor(bmi))),
-                      const SizedBox(height: 8),
-                      Text(bmi.toStringAsFixed(1), style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _getBMIColor(bmi))),
-                      Text(_getBMICategory(bmi), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _getBMIColor(bmi))),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // Avatar Seçimi Bölümü
-            _buildSectionCard(
-              title: '📸 Profil Fotoğrafı',
-              children: [
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        // Mevcut profil fotoğrafı
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: primaryColor, width: 3),
-                          ),
-                          child: ClipOval(
-                            child: _profileImageUrl != null
-                                ? Image.network(_profileImageUrl!, fit: BoxFit.cover)
-                                : _selectedAvatarIndex != null
-                                    ? Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          gradient: LinearGradient(
-                                            colors: [primaryColor.withOpacity(0.1), primaryColor.withOpacity(0.3)],
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            _getAvatarEmoji(_selectedAvatarIndex!),
-                                            style: const TextStyle(fontSize: 40),
-                                          ),
-                                        ),
-                                      )
-                                    : Icon(Icons.person, size: 40, color: Colors.grey),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Avatar seçenekleri
-                        const Text(
-                          'Avatar Seç',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                          itemCount: 8,
-                          itemBuilder: (context, index) {
-                            final isSelected = _selectedAvatarIndex == index;
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedAvatarIndex = index;
-                                  _profileImageUrl = null; // Özel fotoğrafı kaldır
-                                });
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isSelected ? primaryColor : Colors.grey.shade300,
-                                    width: isSelected ? 3 : 1,
-                                  ),
-                                  gradient: isSelected
-                                      ? LinearGradient(
-                                          colors: [primaryColor.withOpacity(0.1), primaryColor.withOpacity(0.3)],
-                                        )
-                                      : null,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    _getAvatarEmoji(index),
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: isSelected ? primaryColor : Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Özel fotoğraf yükleme
-                        const Divider(),
-                        const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: _pickProfileImage,
-                          icon: const Icon(Icons.camera_alt),
-                          label: const Text('Özel Fotoğraf Yükle'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor.withOpacity(0.1),
-                            foregroundColor: primaryColor,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ],
+            _buildHeader(),
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  children: [
+                    const SizedBox(height: 16),
+                    _buildHealthStatsCard(),
+                    const SizedBox(height: 16),
+                    _buildBmiCard(),
+                    const SizedBox(height: 16),
+                    _buildAvatarSection(),
+                    const SizedBox(height: 16),
+                    _buildPersonalInfoSection(),
+                    const SizedBox(height: 16),
+                    _buildPhysicalInfoSection(),
+                    const SizedBox(height: 16),
+                    _buildExpansionSection(
+                      title: 'Beslenme Tercihleri',
+                      icon: Icons.restaurant_menu_outlined,
+                      items: dietTypesWithEmojis,
+                      selectedItems: secilenDiyetTurleri,
+                      isOtherSelected: digerDiyetTuruSecili,
+                      otherController: _digerDiyetTuruController,
+                      onChanged: (item, isSelected) => setState(() => isSelected ? secilenDiyetTurleri.add(item) : secilenDiyetTurleri.remove(item)),
+                      onOtherChanged: (isSelected) => setState(() => digerDiyetTuruSecili = isSelected),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    _buildExpansionSection(
+                      title: 'Alerjiler',
+                      icon: Icons.warning_amber_rounded,
+                      // *** DEĞİŞİKLİK: Alerjiler bölümü için uyarı rengi tanımlandı ***
+                      accentColor: Colors.orange.shade700,
+                      items: allergiesWithEmojis,
+                      selectedItems: secilenAlerjiler,
+                      isOtherSelected: digerAlerjiSecili,
+                      otherController: _digerAlerjiController,
+                      onChanged: (item, isSelected) => setState(() => isSelected ? secilenAlerjiler.add(item) : secilenAlerjiler.remove(item)),
+                      onOtherChanged: (isSelected) => setState(() => digerAlerjiSecili = isSelected),
+                    ),
+                    const SizedBox(height: 100), // Alttaki buton için boşluk
+                  ],
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildSectionCard(
-              title: '👤 Kişisel Bilgiler',
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Ad Soyad', prefixIcon: Icon(Icons.person)),
-                  validator: (value) => (value?.isEmpty ?? true) ? 'Ad soyad giriniz' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _ageController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Yaş', prefixIcon: Icon(Icons.cake)),
-                  validator: (value) {
-                    final age = int.tryParse(value ?? '');
-                    return (age == null || age <= 0) ? 'Geçerli bir yaş giriniz' : null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _gender,
-                  decoration: const InputDecoration(labelText: 'Cinsiyet', prefixIcon: Icon(Icons.wc)),
-                  items: _genderOptions.map((gender) => DropdownMenuItem(value: gender, child: Text(gender))).toList(),
-                  onChanged: (value) => setState(() => _gender = value!),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-            
-            _buildSectionCard(
-              title: '📏 Fiziksel Özellikler',
-              children: [
-                TextFormField(
-                  controller: _weightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Kilo (kg)', prefixIcon: Icon(Icons.monitor_weight)),
-                  onChanged: (value) => setState(() {}), // Kilo değiştikçe BMI'yi anında güncellemek için
-                  validator: (value) {
-                    final weight = double.tryParse(value ?? '');
-                    return (weight == null || weight <= 0) ? 'Geçerli bir kilo giriniz' : null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _heightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Boy (cm)', prefixIcon: Icon(Icons.height)),
-                  onChanged: (value) => setState(() {}), // Boy değiştikçe BMI'yi anında güncellemek için
-                  validator: (value) {
-                    final height = double.tryParse(value ?? '');
-                    return (height == null || height <= 0) ? 'Geçerli bir boy giriniz' : null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _activityLevel,
-                  decoration: const InputDecoration(labelText: 'Aktivite Seviyesi', prefixIcon: Icon(Icons.fitness_center)),
-                  items: _activityLevels.map((level) => DropdownMenuItem(value: level, child: Text(level))).toList(),
-                  onChanged: (value) => setState(() => _activityLevel = value!),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-            
-            _buildSectionCard(
-              title: '🥗 Beslenme Tercihleri',
-              children: [
-                Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Icon(Icons.restaurant_menu, color: primaryColor),
-                        title: const Text('🍽️ Beslenme Tercihleri'),
-                        subtitle: secilenDiyetTurleri.isEmpty 
-                          ? const Text('Tercihlerinizi seçin')
-                          : Text('${secilenDiyetTurleri.length} seçenek seçildi'),
-                        trailing: Icon(isDietSectionExpanded ? Icons.expand_less : Icons.expand_more),
-                        onTap: () => setState(() => isDietSectionExpanded = !isDietSectionExpanded),
-                      ),
-                      if (isDietSectionExpanded)
-                        // ... (İçerik aynı, renkler temaya uygun)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...dietTypesWithEmojis.entries.map((entry) {
-                                final type = entry.key;
-                                final emoji = entry.value;
-                                return _buildCheckboxRow(
-                                  title: type,
-                                  emoji: emoji,
-                                  isSelected: secilenDiyetTurleri.contains(type),
-                                  onChanged: (isChecked) {
-                                    setState(() {
-                                      if (isChecked == true) secilenDiyetTurleri.add(type);
-                                      else secilenDiyetTurleri.remove(type);
-                                    });
-                                  },
-                                  color: primaryColor,
-                                );
-                              }),
-                              _buildCheckboxRow(
-                                title: 'Diğer',
-                                emoji: '✏️',
-                                isSelected: digerDiyetTuruSecili,
-                                onChanged: (isChecked) => setState(() => digerDiyetTuruSecili = isChecked ?? false),
-                                color: primaryColor,
-                              ),
-                              if (digerDiyetTuruSecili)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: TextFormField(
-                                    controller: _digerDiyetTuruController,
-                                    decoration: const InputDecoration(labelText: 'Lütfen belirtin', border: OutlineInputBorder(), isDense: true),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-            
-            _buildSectionCard(
-              title: '⚠️ Alerjiler',
-              children: [
-                Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Icon(Icons.warning, color: Colors.orange.shade700),
-                        title: const Text('⚠️ Alerjileriniz'),
-                        subtitle: secilenAlerjiler.isEmpty 
-                          ? const Text('Varsa seçin (isteğe bağlı)')
-                          : Text('${secilenAlerjiler.length} alerji seçildi'),
-                        trailing: Icon(isAllergySectionExpanded ? Icons.expand_less : Icons.expand_more),
-                        onTap: () => setState(() => isAllergySectionExpanded = !isAllergySectionExpanded),
-                      ),
-                      if (isAllergySectionExpanded)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...allergiesWithEmojis.entries.map((entry) {
-                                final allergen = entry.key;
-                                final emoji = entry.value;
-                                return _buildCheckboxRow(
-                                  title: allergen,
-                                  emoji: emoji,
-                                  isSelected: secilenAlerjiler.contains(allergen),
-                                  onChanged: (isChecked) {
-                                    setState(() {
-                                      if (isChecked == true) secilenAlerjiler.add(allergen);
-                                      else secilenAlerjiler.remove(allergen);
-                                    });
-                                  },
-                                  color: Colors.orange.shade700,
-                                );
-                              }),
-                              _buildCheckboxRow(
-                                title: 'Diğer',
-                                emoji: '✏️',
-                                isSelected: digerAlerjiSecili,
-                                onChanged: (isChecked) => setState(() => digerAlerjiSecili = isChecked ?? false),
-                                color: Colors.orange.shade700,
-                              ),
-                              if (digerAlerjiSecili)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: TextFormField(
-                                    controller: _digerAlerjiController,
-                                    decoration: const InputDecoration(labelText: 'Lütfen belirtin', border: OutlineInputBorder(), isDense: true),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-            
-            _buildSectionCard(
-              title: '🩸 Kan Tahlili Sonuçları',
-              children: [
-                if (_isUploading)
-                  Center(child: CircularProgressIndicator(color: primaryColor))
-                else if (_bloodTestImageUrl != null)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(_bloodTestImageUrl!)),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: TextButton.icon(
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Değiştir'),
-                          onPressed: _pickAndUploadBloodTest,
-                        ),
-                      )
-                    ],
-                  )
-                else
-                  ListTile(
-                    leading: Icon(Icons.upload_file_rounded, color: primaryColor),
-                    title: const Text('Kan Tahlili Sonuçlarını Yükle'),
-                    subtitle: const Text('PDF veya resim formatında yükleyin'),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: _pickAndUploadBloodTest,
-                  ),
-              ],
-            ),
-            
-            const SizedBox(height: 32),
-
-            ElevatedButton(
-              onPressed: _isSaving ? null : _saveProfile,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: _isSaving
-                ? const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
-                      SizedBox(width: 12),
-                      Text('Kaydediliyor...'),
-                    ],
-                  )
-                : const Text('💾 Profili Kaydet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
       ),
+      bottomSheet: _buildStickySaveButton(),
     );
   }
 
-  Widget _buildSectionCard({required String title, required List<Widget> children}) {
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: _textColor),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          const Text(
+            'Profil',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _textColor),
+          ),
+          const SizedBox(width: 48), // Simetri için boş widget
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHealthStatsCard() {
+    return _buildSectionCard(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            // *** DEĞİŞİKLİK: İstatistik renkleri daha modern tonlarla güncellendi ***
+            _buildStatItem('Sağlık Skoru', '$_totalHealthScore', Icons.favorite_rounded, Colors.pink.shade400),
+            _buildStatItem('Seri', '$_streakCount', Icons.local_fire_department_rounded, Colors.orange.shade600),
+            _buildStatItem('Risk', _currentRiskLevel, Icons.shield_rounded, Colors.blue.shade600),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 28),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textColor)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(fontSize: 12, color: _subtleTextColor)),
+      ],
+    );
+  }
+
+  Widget _buildBmiCard() {
+    final bmi = _calculateBMI();
+    final bmiCategory = _getBMICategory(bmi);
+    final bmiColor = _getBMIColor(bmi);
+    double bmiPercent = (bmi.clamp(10, 35) - 10) / (35 - 10);
+
+    return _buildSectionCard(
+      children: [
+        Row(
+          children: [
+            SizedBox(
+              width: 80, height: 80,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CircularProgressIndicator(
+                    value: bmiPercent,
+                    strokeWidth: 8,
+                    backgroundColor: bmiColor.withOpacity(0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(bmiColor),
+                  ),
+                  Center(
+                    child: Text(
+                      bmi.toStringAsFixed(1),
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: bmiColor),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Vücut Kitle İndeksi", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textColor)),
+                  const SizedBox(height: 4),
+                  Text(bmiCategory, style: TextStyle(fontSize: 16, color: bmiColor, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  const Text("Bu değer genel bir göstergedir.", style: TextStyle(fontSize: 12, color: _subtleTextColor)),
+                ],
+              ),
+            )
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildAvatarSection() {
+    return _buildSectionCard(
+      title: "Profil Görünümü",
+      children: [
+        Center(
+          child: CircleAvatar(
+            radius: 50,
+            backgroundColor: _primaryColor.withOpacity(0.1),
+            backgroundImage: _profileImageUrl != null ? NetworkImage(_profileImageUrl!) : null,
+            child: _isUploading 
+              ? const CircularProgressIndicator(color: _primaryColor)
+              : (_profileImageUrl == null)
+                  ? Text(_selectedAvatarIndex != null ? _avatarEmojis[_selectedAvatarIndex!] : '👤', style: const TextStyle(fontSize: 48))
+                  : null,
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text("Avatar Seç", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _textColor)),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 60,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _avatarEmojis.length,
+            itemBuilder: (context, index) {
+              final isSelected = _selectedAvatarIndex == index;
+              return GestureDetector(
+                onTap: () => setState(() {
+                  _selectedAvatarIndex = index;
+                  _profileImageUrl = null;
+                }),
+                child: Container(
+                  width: 60,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? _primaryColor.withOpacity(0.15) : _cardColor,
+                    border: Border.all(
+                      color: isSelected ? _primaryColor : Colors.grey.shade300,
+                      width: isSelected ? 2.5 : 1.5,
+                    ),
+                  ),
+                  child: Center(child: Text(_avatarEmojis[index], style: const TextStyle(fontSize: 28))),
+                ),
+              );
+            },
+          ),
+        ),
+        const Divider(height: 32),
+        Center(
+          child: TextButton.icon(
+            onPressed: _pickProfileImage,
+            icon: const Icon(Icons.camera_alt_outlined, color: _primaryColor),
+            label: const Text('Özel Fotoğraf Yükle', style: TextStyle(color: _primaryColor)),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: _primaryColor.withOpacity(0.08),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPersonalInfoSection() {
+    return _buildSectionCard(
+      title: 'Kişisel Bilgiler',
+      children: [
+        _buildTextFormField(controller: _nameController, label: 'Ad Soyad', icon: Icons.person_outline),
+        const SizedBox(height: 16),
+        _buildTextFormField(controller: _ageController, label: 'Yaş', icon: Icons.cake_outlined, keyboardType: TextInputType.number),
+        const SizedBox(height: 16),
+        _buildDropdownField(_gender, _genderOptions, 'Cinsiyet', (val) => setState(() => _gender = val!), Icons.wc_outlined),
+      ],
+    );
+  }
+
+  Widget _buildPhysicalInfoSection() {
+    return _buildSectionCard(
+      title: 'Fiziksel Özellikler',
+      children: [
+        _buildTextFormField(controller: _weightController, label: 'Kilo (kg)', icon: Icons.monitor_weight_outlined, keyboardType: TextInputType.number),
+        const SizedBox(height: 16),
+        _buildTextFormField(controller: _heightController, label: 'Boy (cm)', icon: Icons.height_outlined, keyboardType: TextInputType.number),
+        const SizedBox(height: 16),
+        _buildDropdownField(_activityLevel, _activityLevels, 'Aktivite Seviyesi', (val) => setState(() => _activityLevel = val!), Icons.fitness_center_outlined),
+      ],
+    );
+  }
+
+  Widget _buildExpansionSection({
+    required String title,
+    required IconData icon,
+    required Map<String, String> items,
+    required List<String> selectedItems,
+    required bool isOtherSelected,
+    required TextEditingController otherController,
+    required Function(String, bool) onChanged,
+    required Function(bool) onOtherChanged,
+    Color? accentColor, // *** DEĞİŞİKLİK: Opsiyonel renk parametresi eklendi ***
+  }) {
+    final color = accentColor ?? _primaryColor;
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: color.withOpacity(0.3)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      child: ExpansionTile(
+        leading: Icon(icon, color: color),
+        title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _textColor)),
+        subtitle: Text('${selectedItems.length} seçenek seçili', style: const TextStyle(color: _subtleTextColor)),
+        iconColor: color,
+        collapsedIconColor: color,
+        childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        children: [
+          ...items.entries.map((entry) => _buildCheckboxRow(
+            title: entry.key,
+            emoji: entry.value,
+            isSelected: selectedItems.contains(entry.key),
+            onChanged: (val) => onChanged(entry.key, val ?? false),
+            color: color,
+          )),
+          _buildCheckboxRow(
+            title: 'Diğer', emoji: '✏️', isSelected: isOtherSelected,
+            onChanged: (val) => onOtherChanged(val ?? false),
+            color: color,
+          ),
+          if (isOtherSelected)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 0, right: 0, bottom: 8),
+              child: _buildTextFormField(
+                controller: otherController,
+                label: 'Lütfen belirtin',
+                icon: Icons.notes_outlined,
+                isDense: true,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStickySaveButton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: _cardColor.withOpacity(0.95),
+      child: ElevatedButton(
+        onPressed: _isSaving ? null : _saveProfile,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _primaryColor,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: _isSaving
+            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white))
+            : const Text('Değişiklikleri Kaydet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+  
+  // --- Yardımcı Widget'lar ---
+  Widget _buildSectionCard({String? title, required List<Widget> children, EdgeInsets? padding}) {
+    return Card(
+      elevation: 0,
+      color: _cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: padding ?? const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const Divider(height: 24),
+            if (title != null) ...[
+              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textColor)),
+              const Divider(height: 24),
+            ],
             ...children,
           ],
         ),
@@ -787,34 +608,97 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // --- YENİ EKLENDİ: TEKRAR KULLANILABİLİR CHECKBOX SATIRI ---
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    bool isDense = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: _subtleTextColor),
+        filled: true,
+        fillColor: _backgroundColor,
+        isDense: isDense,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      ),
+      validator: (value) => (value?.isEmpty ?? true) ? 'Bu alan boş bırakılamaz' : null,
+      onChanged: (value) => setState(() {}),
+    );
+  }
+
+  Widget _buildDropdownField(String value, List<String> items, String label, ValueChanged<String?> onChanged, IconData icon) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: _subtleTextColor),
+        filled: true,
+        fillColor: _backgroundColor,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      ),
+    );
+  }
+
   Widget _buildCheckboxRow({
     required String title,
     required String emoji,
     required bool isSelected,
     required ValueChanged<bool?> onChanged,
-    required Color color,
+    required Color color, // *** DEĞİŞİKLİK: Renk parametresi eklendi ***
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      decoration: BoxDecoration(
-        color: isSelected ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: CheckboxListTile(
-        activeColor: color,
-        title: Row(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 18)),
-            const SizedBox(width: 8),
-            Expanded(child: Text(title)),
-          ],
-        ),
-        value: isSelected,
-        dense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-        onChanged: onChanged,
-      ),
+    return CheckboxListTile(
+      value: isSelected,
+      onChanged: onChanged,
+      activeColor: color, // *** DEĞİŞİKLİK: Gelen renk parametresi kullanıldı ***
+      title: Text('$emoji $title', style: const TextStyle(color: _textColor)),
+      controlAffinity: ListTileControlAffinity.leading,
+      contentPadding: EdgeInsets.zero,
+      dense: true,
     );
+  }
+
+  // --- Yardımcı Hesaplama Fonksiyonları ---
+  int _getWeekOfYear(DateTime date) {
+    final firstDayOfYear = DateTime(date.year, 1, 1);
+    final daysSinceFirstDay = date.difference(firstDayOfYear).inDays;
+    return (daysSinceFirstDay / 7).ceil();
+  }
+
+  String _getRiskText(int riskScore) {
+    if (riskScore <= 20) return 'Çok Düşük';
+    if (riskScore <= 40) return 'Düşük';
+    if (riskScore <= 60) return 'Orta';
+    if (riskScore <= 80) return 'Yüksek';
+    return 'Çok Yüksek';
+  }
+
+  double _calculateBMI() {
+    final weight = double.tryParse(_weightController.text) ?? 0;
+    final height = double.tryParse(_heightController.text) ?? 0;
+    if (height <= 0) return 0;
+    return weight / ((height / 100) * (height / 100));
+  }
+
+  String _getBMICategory(double bmi) {
+    if (bmi <= 0) return 'Değer bekleniyor';
+    if (bmi < 18.5) return 'Zayıf';
+    if (bmi < 25) return 'Normal';
+    if (bmi < 30) return 'Fazla Kilolu';
+    return 'Obez';
+  }
+
+  Color _getBMIColor(double bmi) {
+    if (bmi <= 0) return _subtleTextColor;
+    if (bmi < 18.5) return Colors.blue.shade400;
+    if (bmi < 25) return _primaryColor;
+    if (bmi < 30) return Colors.orange.shade600;
+    return Colors.red.shade600;
   }
 }
