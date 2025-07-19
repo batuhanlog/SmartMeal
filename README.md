@@ -315,6 +315,12 @@ Toplantı notları ve ekran görüntüleri için:
 
 Geçtiğimiz sprintte belirlenmiş olan proje yönetim aracı **TRELLO**, bu sprint boyunca da kullanılmaya devam edilmiştir. Kişilere atanan görevler, önceki sprintte tamamlananlar ve ilerleyiş görülebilmektedir. Bu sistem, ekip içinde iş takibini kolaylaştırmak ve sprint verimliliğini artırmak amacıyla kullanılmıştır.
 
+Aşapıda sprint 2 de tamamlanması beklenilen özellikler en soldaki sütunda yer almaktadır. Aynı zamanda tamamlanması beklenilen ancak hala devam eden görevler 2. sütunda belirtilmiştir. 3. sütunda önceki sprintte tamamlanmış görevler görülmektedir. 
+
+<img width="1364" height="852" alt="Ekran Resmi 2025-07-19 16 29 49" src="https://github.com/user-attachments/assets/68d77713-e32f-4bfa-895f-cf9b837534fb" />
+
+Panomuzun linki READ ME yukarıda TRELLO şeklinde verilmiştir. Link ile de aynı bilgilere erişim sağlanabilmektedir.
+
 </details>
 
 <details>
