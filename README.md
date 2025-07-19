@@ -294,7 +294,7 @@ Sprint 2'de ürünümüz SmartMeal’in temel yapısı korunarak yeni özellikle
 
 Yapay zeka entegrasyonları derinleştirilmiş, sağlık takibi modülleri (su tüketimi, adım sayar, kan tahlili, erken tanı sistemi) uygulamaya dahil edilmiştir. Ayrıca kullanıcı profil yönetimi, avatar seçimi ve alerji tanımlama gibi bireysel veri alanları da geliştirilmiştir.
 
-Tüm bu geliştirmelerle birlikte, SmartMeal’in kişiselleştirilmiş beslenme asistanı olma vizyonu bir adım ileri taşınmıştır.
+Tüm bu geliştirmelerle birlikte, SMeal’in kişiselleştirilmiş beslenme asistanı olma vizyonu bir adım ileri taşınmıştır.
 
 </details>
 
