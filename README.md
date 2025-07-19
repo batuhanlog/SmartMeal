@@ -337,11 +337,11 @@ Panomuzun linki yukarıda TRELLO yazısı ile ve oklar yardımıyla gösterilmi�
 <details>
 <summary><strong> Sprint Katılımcıları</strong></summary>
 
-Batuhan Kayahan – Product Owner - aktif
-Gökçe Beyza Gökçek – Scrum Master - aktif
-Emine Suna Yılmaz – Developer - aktif
-Hasan Kılınç – Developer - aktif
-Selimhan Gitmişoğlu – Developer - 
+- Batuhan Kayahan – Product Owner - aktif
+- Gökçe Beyza Gökçek – Scrum Master  - aktif
+- Emine Suna Yılmaz – Developer  - aktif
+- Hasan Kılınç – Developer  - aktif
+- Selimhan Gitmişoğlu – Developer -
 
 </details>
 
