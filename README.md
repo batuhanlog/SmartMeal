@@ -319,7 +319,7 @@ Aşapıda sprint 2 de tamamlanması beklenilen özellikler en soldaki sütunda y
 
 <img width="1364" height="852" alt="Ekran Resmi 2025-07-19 16 29 49" src="https://github.com/user-attachments/assets/68d77713-e32f-4bfa-895f-cf9b837534fb" />
 
-Panomuzun linki READ ME yukarıda TRELLO şeklinde verilmiştir. Link ile de aynı bilgilere erişim sağlanabilmektedir.
+Panomuzun linki yukarıda TRELLO yazısı ile ve oklar yardımıyla gösterilmiştir. Link ile de aynı bilgilere erişim sağlanabilmektedir.
 
 </details>
 
