@@ -290,7 +290,7 @@ Burndown chart aşağıda verilmiştir:
 <details>
 <summary><strong> Sprint Notları</strong></summary>
 
-Sprint 2'de ürünümüz SmartMeal’in temel yapısı korunarak yeni özelliklerle fonksiyonelliği artırılmış, görsel arayüzler yeniden tasarlanmış ve kullanıcı deneyimi iyileştirilmiştir. Bu sprintteki öncelikli hedef, kullanıcıya daha fazla kişiselleştirilmiş ve sağlık odaklı içerik sunabilmekti. 
+Sprint 2'de ürünümüz SMeal’in temel yapısı korunarak yeni özelliklerle fonksiyonelliği artırılmış, görsel arayüzler yeniden tasarlanmış ve kullanıcı deneyimi iyileştirilmiştir. Bu sprintteki öncelikli hedef, kullanıcıya daha fazla kişiselleştirilmiş ve sağlık odaklı içerik sunabilmekti. 
 
 Yapay zeka entegrasyonları derinleştirilmiş, sağlık takibi modülleri (su tüketimi, adım sayar, kan tahlili, erken tanı sistemi) uygulamaya dahil edilmiştir. Ayrıca kullanıcı profil yönetimi, avatar seçimi ve alerji tanımlama gibi bireysel veri alanları da geliştirilmiştir.
 
