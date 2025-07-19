@@ -284,3 +284,13 @@ Burndown chart aşağıda verilmiştir:
 - “En İyi Katkı” sticker’ı uygulaması başlatılacak  
 
 </details>
+
+# 📍 SPRINT 2
+
+<details>
+<summary><strong> Sprint Planı</strong></summary>
+
+**Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
+
+**Puan tamamlama mantığı:**  
+SMART MEAL toplamda 300 puanlık bir geliştirme yüküne sahiptir. Proje üç sprint’e bölünerek planlandığı için her sprintte yaklaşık 100 puanlık iş tamamlanması hedeflenmiştir. Sprint 2’
