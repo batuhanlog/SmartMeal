@@ -305,3 +305,48 @@ Daily Scrum toplantıları, ekip üyelerinin okul ve iş yoğunlukları göz ön
 Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli dokümanlar aşağıdaki linke eklenmiştir.
 
 </details>
+
+<details>
+<summary><strong> Sprint Board Updates</strong></summary>
+
+Geçtiğimiz sprintte belirlenmiş olan proje yönetim aracı **TRELLO**, bu sprint boyunca da kullanılmaya devam edilmiştir. Kişilere atanan görevler, önceki sprintte tamamlananlar ve ilerleyiş görülebilmektedir. Bu sistem, ekip içinde iş takibini kolaylaştırmak ve sprint verimliliğini artırmak amacıyla kullanılmıştır.
+
+</details>
+
+<details>
+<summary><strong> Sprint Katılımcıları</strong></summary>
+
+- **Batuhan Kayahan** – Product Owner  
+- **Gökçe Beyza Gökçek** – Scrum Master  
+- **Emine Suna Yılmaz** – Developer  
+- **Hasan Kılınç** – Developer  
+
+</details>
+
+<details>
+<summary><strong> Sprint Review</strong></summary>
+
+- Uygulama isminin Smart Meal'dan Smeal olarak güncellenmesi  
+- Logonun ve uygulama iconunun güncellenmesi  
+- Kayıt ekranı, Giriş ekranı, Ana sayfa, Profil ekranı UI tasarımı yenilendi  
+- “Elimdeki Malzemelerle Tarif” ekranına AI entegrasyonu yapıldı  
+- Tarif içeriklerinin AI tarafından otomatik oluşturulması sağlandı  
+- Profil güncelleme ekranı geliştirildi  
+- Profile avatar seçme özelliği eklendi  
+- 6 adet emoji temelli avatar tanımlandı  
+- Profil görseli değiştirme alanı ayarlara eklendi  
+- Kayıt ekranına “Alerjiler” alanı eklendi  
+- Alerji etkenlerinin uygulama içi entegrasyonu sağlandı  
+- “Beslenme Türleri” seçenekleri genişletildi  
+- Günlük su tüketimi takibi özelliği eklendi  
+- Günlük adım sayar özelliği eklendi  
+- Kullanıcının kan tahlili bilgilerini ekleyebileceği alan oluşturuldu  
+- Erken tanı sistemi geliştirildi  
+- Kanser hastalıkları için erken teşhis analizi altyapısı oluşturuldu  
+- Haftalık pop-up sorularla erken tanı taraması yapılması sağlandı  
+- Geçmiş analiz sonuçlarının görüntülenmesi özelliği eklendi  
+
+</details>
+
+
+
