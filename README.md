@@ -304,6 +304,10 @@ Daily Scrum toplantıları, ekip üyelerinin okul ve iş yoğunlukları göz ön
 
 Toplantı notları, görev güncellemeleri ve iletişim akışına dair gerekli dokümanlar aşağıdaki linke eklenmiştir.
 
+Toplantı notları ve ekran görüntüleri için:  
+👉 [Google Drive Klasörüne Buradan Ulaşabilirsiniz](https://drive.google.com/drive/folders/1RTlllm6dsrd0_PJstcGwJq47jXZ4870O?usp=sharing)
+
+
 </details>
 
 <details>
