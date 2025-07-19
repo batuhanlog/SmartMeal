@@ -348,5 +348,38 @@ Geçtiğimiz sprintte belirlenmiş olan proje yönetim aracı **TRELLO**, bu spr
 
 </details>
 
+<details>
+<summary><strong> Ürün Durumu</strong></summary>
+
+Ürünümüzün güncel durumu aşağıda fotoğraflarla gösterilmektedir:
+
+<!-- Gerekli görselleri bu alana ekleyebilirsiniz -->
+
+</details>
+
+<details>
+<summary><strong> Sprint Retrospective</strong></summary>
+
+**⚠️ Potansiyel Sorunlar**  
+- Ekip içi iletişim aksaklıkları  
+- İşlerin geç tamamlanması  
+- Gerekli aksiyonların zamanında alınmaması  
+- Teknik alanda yaşanan aksaklıklar sebebiyle süreçlerin uzaması  
+
+**✅ İyi Giden Noktalar**  
+- Ekibin içerisinde oldukça toleranslı davranılması  
+- Herkesin yaratıcı şekilde katkıda bulunması  
+- Fikir geliştirme ve uygulama özgürlüğünün bulunması  
+- Sınırlandırıcı değil, esnek bir çalışma ortamının belirlenmesi  
+- Ekip üyelerinin birbirine destek olmaya çalışması  
+
+**📌 Alınan Kararlar**  
+- Kontrol noktaları sıkılaştırılacak  
+- Daha sıkı bir çalışma sürecine girileceği için toplantılarda bu durum vurgulanacak  
+- Ekibe destek noktasında çekingen davranan veya çabasız kişilerle vakit kaybedilmeyecek  
+- Çalışma ve toplantılara maksimum uyum bekleniyor  
+- Ekibin duygusal dayanıklılığının artırılması gerekiyor  
+
+</details>
 
 
