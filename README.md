@@ -360,7 +360,8 @@ Geçtiğimiz sprintte belirlenmiş olan proje yönetim aracı **TRELLO**, bu spr
 <details>
 <summary><strong> Sprint Retrospective</strong></summary>
 
-**⚠️ Potansiyel Sorunlar**  
+
+**⚠️ Zorlayıcı Noktalar**  
 - Ekip içi iletişim aksaklıkları  
 - İşlerin geç tamamlanması  
 - Gerekli aksiyonların zamanında alınmaması  
@@ -376,7 +377,6 @@ Geçtiğimiz sprintte belirlenmiş olan proje yönetim aracı **TRELLO**, bu spr
 **📌 Alınan Kararlar**  
 - Kontrol noktaları sıkılaştırılacak  
 - Daha sıkı bir çalışma sürecine girileceği için toplantılarda bu durum vurgulanacak  
-- Ekibe destek noktasında çekingen davranan veya çabasız kişilerle vakit kaybedilmeyecek  
 - Çalışma ve toplantılara maksimum uyum bekleniyor  
 - Ekibin duygusal dayanıklılığının artırılması gerekiyor  
 
