@@ -361,9 +361,8 @@ Panomuzun linki yukarıda TRELLO yazısı ile ve oklar yardımıyla gösterilmi�
 <details>
 <summary><strong> Ürün Durumu</strong></summary>
 
-Ürünümüzün güncel durumu aşağıda fotoğraflarla gösterilmektedir:
-
-<!-- Gerekli görselleri bu alana ekleyebilirsiniz -->
+Ürünümüzün güncel durumu aşağıda drive linkindeki görsellerde gösterilmektedir: 
+👉 [Google Drive Klasörüne Buradan Ulaşabilirsiniz](https://drive.google.com/drive/folders/1CZ8EVHB0HSZEYjxsVwkB3kSK9mQ0UJTE?usp=sharing)
 
 </details>
 
