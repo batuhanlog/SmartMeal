@@ -1,4 +1,4 @@
-![SmartMealLogo](https://github.com/user-attachments/assets/45cac1dd-b591-4809-8c83-b619b0564a07)
+![LOGO](https://github.com/user-attachments/assets/c72d0ed3-8d75-486a-89b0-bd855c03c557)
 
 
 # Takım Bilgileri 
