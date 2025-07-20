@@ -12,60 +12,40 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  // --- Tutarlı Tema ve Stil Sabitleri ---
-  static const Color _primaryColor = Color(0xFF1B5E20);
-  static const Color _backgroundColor = Color(0xFFF8F9FA);
-  static const Color _textColor = Color(0xFF343A40);
-  static const Color _subtleTextColor = Color(0xFF6C757D);
-  static const Color _cardColor = Colors.white; // *** EKSİK OLAN VE EKLENEN SATIR ***
-
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
     _navigateToMainPage();
-  }
-  
-  void _setupAnimations() {
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-    
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
-    
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-
-    _controller.forward();
   }
 
   Future<void> _navigateToMainPage() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
-    
     try {
+      // Firebase'i initialize et
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
       
       if (mounted) {
+        // Kullanıcı giriş durumunu kontrol et
         final user = FirebaseAuth.instance.currentUser;
         
-        final pageRoute = MaterialPageRoute(
-          builder: (context) => user != null ? const HomePage() : const AuthPage(),
-        );
-
-        Navigator.pushReplacement(context, pageRoute);
+        if (user != null) {
+          // Kullanıcı giriş yapmış, ana sayfaya yönlendir
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else {
+          // Kullanıcı giriş yapmamış, auth sayfasına yönlendir
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AuthPage()),
+          );
+        }
       }
     } catch (e) {
+      // Hata durumunda auth sayfasına yönlendir
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -76,85 +56,83 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _backgroundColor,
+      backgroundColor: Colors.white,
       body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    color: _cardColor, // Artık bu değişken tanımlı
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Yeni icon gösterimi
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/images/icon.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Image.asset(
-                      'assets/images/icon.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: _primaryColor,
-                          child: const Icon(Icons.restaurant_menu, size: 50, color: Colors.white),
-                        );
-                      },
-                    ),
-                  ),
+                      child: const Icon(
+                        Icons.restaurant,
+                        size: 60,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(height: 24),
-                
-                const Text(
-                  'Smeal',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: _textColor,
-                  ),
-                ),
-                
-                const SizedBox(height: 8),
-                
-                const Text(
-                  'AI destekli beslenme asistanınız',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: _subtleTextColor,
-                  ),
-                ),
-                
-                const SizedBox(height: 60),
-                
-                const SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 24),
+            
+            // Uygulama adı
+            const Text(
+              'Smeal',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF4CAF50),
+              ),
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // Alt yazı
+            const Text(
+              'AI destekli beslenme asistanı',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+            
+            const SizedBox(height: 40),
+            
+            // Loading indicator
+            const SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+              ),
+            ),
+          ],
         ),
       ),
     );

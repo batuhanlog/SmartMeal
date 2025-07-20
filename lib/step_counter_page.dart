@@ -14,18 +14,20 @@ class StepCounterPage extends StatefulWidget {
 }
 
 class _StepCounterPageState extends State<StepCounterPage> {
-  // --- TEMA RENKLERİ ---
+  // --- YENİ RENK PALETİ ---
   final Color primaryColor = Colors.green.shade800;
   final Color secondaryColor = Colors.green.shade600;
   final Color backgroundColor = Colors.grey.shade100;
 
-  // --- Durum Değişkenleri ---
   int todaySteps = 0;
   int dailyGoal = 10000;
   double calories = 0;
   double distance = 0;
+  String status = 'Durdu';
   
   StreamSubscription<StepCount>? _stepCountStream;
+  StreamSubscription<PedestrianStatus>? _pedestrianStatusStream;
+  
   List<int> weeklySteps = List.filled(7, 0);
   
   bool isPermissionGranted = false;
@@ -37,10 +39,13 @@ class _StepCounterPageState extends State<StepCounterPage> {
     super.initState();
     _initializePedometer();
   }
+  
+  // Fonksiyonların geri kalanı aynı, sadece build metodları ve içindeki renkler güncellendi.
 
   @override
   void dispose() {
     _stepCountStream?.cancel();
+    _pedestrianStatusStream?.cancel();
     super.dispose();
   }
 
@@ -58,14 +63,12 @@ class _StepCounterPageState extends State<StepCounterPage> {
   }
 
   Future<void> _checkPermissions() async {
-    var status = await Permission.activityRecognition.status;
-    if (status.isDenied || status.isPermanentlyDenied) {
-      status = await Permission.activityRecognition.request();
-    }
-    if(mounted) {
-      setState(() {
-        isPermissionGranted = status.isGranted;
-      });
+    final status = await Permission.activityRecognition.status;
+    if (status.isDenied) {
+      final result = await Permission.activityRecognition.request();
+      isPermissionGranted = result.isGranted;
+    } else {
+      isPermissionGranted = status.isGranted;
     }
   }
 
@@ -74,335 +77,356 @@ class _StepCounterPageState extends State<StepCounterPage> {
     final today = DateTime.now();
     final todayString = '${today.year}-${today.month}-${today.day}';
     
-    todaySteps = prefs.getInt('steps_$todayString') ?? 0;
-    dailyGoal = prefs.getInt('steps_goal') ?? 10000;
+    setState(() {
+      todaySteps = prefs.getInt('steps_$todayString') ?? 0;
+      dailyGoal = prefs.getInt('steps_goal') ?? 10000;
+    });
     
     for (int i = 0; i < 7; i++) {
       final date = today.subtract(Duration(days: i));
       final dateString = '${date.year}-${date.month}-${date.day}';
       weeklySteps[6 - i] = prefs.getInt('steps_$dateString') ?? 0;
     }
-    if(mounted) setState(() => _calculateStats());
+    _calculateStats();
   }
 
   void _calculateStats() {
     calories = todaySteps * 0.04;
-    distance = todaySteps * 0.762 / 1000;
+    distance = todaySteps * 0.75 / 1000;
   }
 
   void _startListening() {
-    _stepCountStream = Pedometer.stepCountStream.handleError(_onStepCountError).listen(_onStepCount);
+    _stepCountStream = Pedometer.stepCountStream.listen(_onStepCount, onError: _onStepCountError);
+    _pedestrianStatusStream = Pedometer.pedestrianStatusStream.listen(_onPedestrianStatusChanged, onError: _onPedestrianStatusError);
   }
 
   void _onStepCount(StepCount event) {
-    if(!mounted) return;
-    // Bu logic, gece yarısı sıfırlanmasını sağlar.
-    final lastSavedDate = _getLastSavedDate();
-    final today = DateTime.now();
-
-    if(lastSavedDate != null && (today.day != lastSavedDate.day || today.month != lastSavedDate.month)) {
-       // Yeni gün, adımları sıfırla
-       todaySteps = 0;
-    } else {
-       todaySteps = event.steps;
-    }
-
     setState(() {
+      todaySteps = event.steps;
       _calculateStats();
     });
-    _saveStepData(todaySteps);
+    _saveStepData();
   }
 
-  void _onStepCountError(error) {
-    print('Pedometer Error: $error');
-  }
+  void _onPedestrianStatusChanged(PedestrianStatus event) => setState(() => status = event.status);
+  void _onStepCountError(error) => print('Step Count Error: $error');
+  void _onPedestrianStatusError(error) => print('Pedestrian Status Error: $error');
 
-  Future<void> _saveStepData(int steps) async {
+  Future<void> _saveStepData() async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now();
     final todayString = '${today.year}-${today.month}-${today.day}';
-    await prefs.setInt('steps_$todayString', steps);
+    await prefs.setInt('steps_$todayString', todaySteps);
     await prefs.setInt('steps_goal', dailyGoal);
-    await prefs.setString('last_saved_date', today.toIso8601String());
   }
-
-  DateTime? _getLastSavedDate() {
-    // SharedPreferences senkron olabileceğinden bu metodun asenkron olması gerekmez
-    // Ama emin olmak için SharedPreferences'i initState'te yüklemek daha iyidir.
-    // Bu örnek için basit tutulmuştur.
-    return null; 
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Scaffold(backgroundColor: backgroundColor, body: Center(child: CircularProgressIndicator(color: primaryColor)));
-    }
-    if (!isPermissionGranted) {
-      return _buildPermissionDeniedScreen();
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: primaryColor)),
+      );
     }
 
+    if (!isPermissionGranted) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Adım Sayar'),
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isWebPlatform ? Icons.web_asset_off_outlined : Icons.directions_walk, 
+                  size: 64, 
+                  color: isWebPlatform ? Colors.grey.shade500 : Colors.orange.shade700,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isWebPlatform ? 'Web Platformunda Desteklenmiyor' : 'Aktivite İzni Gerekli',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  isWebPlatform 
+                    ? 'Adım sayar özelliği yalnızca mobil cihazlarda kullanılabilir.'
+                    : 'Adım sayar özelliğini kullanmak için lütfen telefonunuzun ayarlarından fiziksel aktivite iznini verin.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final progressPercentage = (dailyGoal > 0) ? (todaySteps / dailyGoal).clamp(0.0, 1.0) : 0.0;
+    
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Adım Sayar', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: backgroundColor,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        centerTitle: true,
+        title: const Text('Adım Sayar'),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProgressRing(),
-            const SizedBox(height: 24),
-            _buildInfoCards(),
-            const SizedBox(height: 24),
-            _buildWeeklyChart(),
-            const SizedBox(height: 24),
-            _buildGoalSetting(),
+            _buildStepProgressCard(progressPercentage),
             const SizedBox(height: 20),
+            _buildStatsCards(),
+            const SizedBox(height: 20),
+            _buildStatusCard(),
+            const SizedBox(height: 20),
+            _buildWeeklyChart(),
+            const SizedBox(height: 20),
+            _buildGoalSetting(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPermissionDeniedScreen() {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: const Text('Adım Sayar', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: backgroundColor,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(shape: BoxShape.circle, color: isWebPlatform ? Colors.grey.shade200 : primaryColor.withOpacity(0.1)),
-                child: Icon(isWebPlatform ? Icons.web_asset_off_outlined : Icons.directions_walk, size: 48, color: isWebPlatform ? Colors.grey.shade600 : primaryColor),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                isWebPlatform ? 'Webde Desteklenmiyor' : 'İzin Gerekli',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                isWebPlatform 
-                  ? 'Adım sayar özelliği, sensör erişimi gerektirdiğinden yalnızca mobil cihazlarda kullanılabilir.'
-                  : 'Adımlarını sayabilmemiz için lütfen fiziksel aktivite izni ver.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-              ),
-              if(!isWebPlatform) ...[
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: openAppSettings,
-                  icon: const Icon(Icons.settings),
-                  label: const Text('Ayarları Aç'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  Widget _buildStepProgressCard(double progress) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Text('Bugünün Adımları', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 150,
+                  width: 150,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 15,
+                    backgroundColor: Colors.grey.shade300,
+                    valueColor: AlwaysStoppedAnimation<Color>(progress >= 1.0 ? secondaryColor : primaryColor),
                   ),
-                )
-              ]
-            ],
-          ),
+                ),
+                Column(
+                  children: [
+                    Text('$todaySteps', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                    Text('Hedef: $dailyGoal', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+                    const SizedBox(height: 4),
+                    Text('%${(progress * 100).toInt()}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: progress >= 1.0 ? secondaryColor : primaryColor)),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (progress >= 1.0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(color: secondaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle, color: secondaryColor),
+                    const SizedBox(width: 8),
+                    Text('Günlük hedef başarıldı! 🎉', style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildProgressRing() {
-    final progress = (dailyGoal > 0) ? (todaySteps / dailyGoal).clamp(0.0, 1.0) : 0.0;
-    final goalReached = progress >= 1.0;
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))]),
-      child: Column(
-        children: [
-          SizedBox(
-            width: 180, height: 180,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                PieChart(
-                  PieChartData(
-                    sectionsSpace: 0,
-                    startDegreeOffset: -90,
-                    centerSpaceRadius: 70,
-                    sections: [
-                      PieChartSectionData(value: progress, color: goalReached ? secondaryColor : primaryColor, radius: 15, showTitle: false),
-                      PieChartSectionData(value: 1 - progress, color: primaryColor.withOpacity(0.1), radius: 15, showTitle: false),
-                    ],
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('$todaySteps', style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold)),
-                    Text('ADIM', style: TextStyle(fontSize: 14, color: Colors.grey.shade600, letterSpacing: 1.5)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text('Hedef: $dailyGoal Adım', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          if (goalReached)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: secondaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.check_circle_outline_rounded, color: secondaryColor),
-                  const SizedBox(width: 8),
-                  Text('Hedef tamamlandı! 🎉', style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCards() {
+  Widget _buildStatsCards() {
     return Row(
       children: [
-        Expanded(child: _buildInfoCard('Yakılan Kalori', '${calories.toStringAsFixed(0)} kcal', Icons.local_fire_department_rounded, Colors.orange)),
+        Expanded(
+          child: Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Icon(Icons.local_fire_department, color: Colors.orange.shade700, size: 32),
+                  const SizedBox(height: 8),
+                  Text('${calories.toStringAsFixed(0)} kcal', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Yakılan Kalori', style: TextStyle(color: Colors.grey.shade600)),
+                ],
+              ),
+            ),
+          ),
+        ),
         const SizedBox(width: 16),
-        Expanded(child: _buildInfoCard('Mesafe', '${distance.toStringAsFixed(2)} km', Icons.map_rounded, Colors.blue)),
+        Expanded(
+          child: Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Icon(Icons.straighten, color: Colors.teal.shade600, size: 32),
+                  const SizedBox(height: 8),
+                  Text('${distance.toStringAsFixed(2)} km', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Mesafe', style: TextStyle(color: Colors.grey.shade600)),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildInfoCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color.withOpacity(0.1)),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ],
+  Widget _buildStatusCard() {
+    String statusText;
+    Color statusColor;
+    IconData statusIcon;
+
+    switch (status) {
+      case 'walking':
+        statusText = 'Yürüyor';
+        statusColor = secondaryColor;
+        statusIcon = Icons.directions_walk;
+        break;
+      case 'stopped':
+        statusText = 'Duruyor';
+        statusColor = Colors.grey.shade600;
+        statusIcon = Icons.accessibility_new;
+        break;
+      default:
+        statusText = 'Bilinmiyor';
+        statusColor = Colors.orange.shade700;
+        statusIcon = Icons.help_outline;
+    }
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(statusIcon, color: statusColor, size: 24),
+                const SizedBox(width: 12),
+                Text(statusText, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: statusColor)),
+              ],
+            ),
+            const Divider(height: 24),
+            Text(_getMotivationMessage(), style: TextStyle(fontSize: 14, color: Colors.grey.shade700), textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
 
+  String _getMotivationMessage() {
+    if (isPermissionGranted == false) return "Adım sayar için lütfen aktivite izni verin.";
+    final progress = todaySteps / dailyGoal;
+    if (progress >= 1.0) return '🎉 Harika! Bugünkü hedefinizi tamamladınız. Sağlıklı yaşam için böyle devam edin!';
+    if (progress >= 0.8) return '💪 Neredeyse hedefe ulaştınız! Sadece ${dailyGoal - todaySteps} adım kaldı.';
+    if (progress >= 0.5) return '🚶‍♂️ Güzel gidiyorsunuz! Hedefinizin yarısını geçtiniz.';
+    if (progress >= 0.2) return '⭐ İyi bir başlangıç! Hareket etmeye devam edin.';
+    return '🌟 Gün daha yeni başlıyor! Hedefinize ulaşmak için harekete geçin.';
+  }
+
   Widget _buildWeeklyChart() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Haftalık Aktivite', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 150,
-            child: BarChart(
-              BarChartData(
-                maxY: (dailyGoal * 1.25),
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem('${rod.toY.toInt()}\nadım', const TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
-                    },
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Haftalık Adım Grafiği', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 200,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: dailyGoal * 1.2,
+                  barTouchData: BarTouchData(enabled: false),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (value, meta) {
+                       final today = DateTime.now();
+                      final day = today.subtract(Duration(days: 6 - value.toInt()));
+                      const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+                      return Text(days[day.weekday - 1]);
+                    })),
+                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 32, getTitlesWidget: (value, meta) {
+                      if (value >= 1000) return Text('${(value / 1000).toStringAsFixed(0)}k');
+                      return Text('${value.toInt()}');
+                    })),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (value, meta) {
-                    const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-                    final dayIndex = DateTime.now().subtract(Duration(days: 6 - value.toInt())).weekday - 1;
-                    return SideTitleWidget(axisSide: meta.axisSide, child: Text(days[dayIndex], style: const TextStyle(fontSize: 12)));
-                  })),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                gridData: const FlGridData(show: false),
-                barGroups: weeklySteps.asMap().entries.map((entry) {
-                  final isGoalReached = entry.value >= dailyGoal;
-                  return BarChartGroupData(
-                    x: entry.key,
-                    barRods: [
-                      BarChartRodData(
-                        toY: entry.value.toDouble(),
-                        width: 18,
-                        borderRadius: const BorderRadius.all(Radius.circular(6)),
-                        gradient: LinearGradient(
-                          colors: isGoalReached
-                              ? [secondaryColor, primaryColor]
-                              : [primaryColor.withOpacity(0.5), primaryColor.withOpacity(0.3)],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
+                  gridData: FlGridData(show: true, drawVerticalLine: false, getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1)),
+                  borderData: FlBorderData(show: false),
+                  barGroups: weeklySteps.asMap().entries.map((entry) {
+                    return BarChartGroupData(
+                      x: entry.key,
+                      barRods: [
+                        BarChartRodData(
+                          toY: entry.value.toDouble(),
+                          color: entry.value >= dailyGoal ? secondaryColor : primaryColor.withOpacity(0.5),
+                          width: 22,
+                          borderRadius: const BorderRadius.all(Radius.circular(6)),
                         ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildGoalSetting() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Günlük Hedefini Ayarla', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Row(
-            children: [
-              Icon(Icons.flag_rounded, color: primaryColor),
-              Expanded(
-                child: Slider(
-                  value: dailyGoal.toDouble(),
-                  min: 5000,
-                  max: 20000,
-                  divisions: 15,
-                  label: '${dailyGoal.toInt()} adım',
-                  activeColor: primaryColor,
-                  inactiveColor: primaryColor.withOpacity(0.2),
-                  onChanged: (value) => setState(() => dailyGoal = value.toInt()),
-                  onChangeEnd: (value) => _saveStepData(todaySteps),
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Günlük Adım Hedefi', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Slider(
+                    value: dailyGoal.toDouble(),
+                    min: 5000,
+                    max: 20000,
+                    divisions: 30,
+                    label: '$dailyGoal adım',
+                    activeColor: primaryColor,
+                    onChanged: (value) => setState(() => dailyGoal = value.toInt()),
+                    onChangeEnd: (value) => _saveStepData(),
+                  ),
                 ),
-              ),
-              Text('${(dailyGoal / 1000).toStringAsFixed(1)}k', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            ],
-          ),
-        ],
+                Text('$dailyGoal', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
