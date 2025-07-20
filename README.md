@@ -1,4 +1,6 @@
-![SmartMealLogo](https://github.com/user-attachments/assets/08c000c8-3dbc-4b8d-a88e-b8444787a73c)
+![SmartMealLogo](https://github.com/user-attachments/assets/45cac1dd-b591-4809-8c83-b619b0564a07)
+
+
 # Takım Bilgileri 
 
 ## Takım İsmi / Ürün İsmi  
