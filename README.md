@@ -341,7 +341,7 @@ Panomuzun linki yukarıda TRELLO yazısı ile ve oklar yardımıyla gösterilmi�
 - Gökçe Beyza Gökçek – Scrum Master  - aktif
 - Emine Suna Yılmaz – Developer  - aktif
 - Hasan Kılınç – Developer  - aktif
-- Selimhan Gitmişoğlu – Developer -
+- Selimhan Gitmişoğlu – Developer - pasif
 
 </details>
 
@@ -367,6 +367,9 @@ Panomuzun linki yukarıda TRELLO yazısı ile ve oklar yardımıyla gösterilmi�
 - Kanser hastalıkları için erken teşhis analizi altyapısı oluşturuldu  
 - Haftalık pop-up sorularla erken tanı taraması yapılması sağlandı  
 - Geçmiş analiz sonuçlarının görüntülenmesi özelliği eklendi  
+
+<img width="1979" height="1180" alt="output (2)" src="https://github.com/user-attachments/assets/e4ad5dd1-0c00-436b-a423-7580d1c62382" />
+
 
 </details>
 
