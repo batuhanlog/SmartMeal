@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 // services/gemini_service.dart dosyasının projenizde doğru bir şekilde
 // yapılandırıldığından emin olun. Bu kodda o dosya olmadan çalışmaz.
-// import 'services/gemini_service.dart';
+import 'services/gemini_service.dart';
 
 // --- GEÇİCİ GEMINI SERVICE SIMÜLASYONU ---
 // Eğer 'gemini_service.dart' dosyanız yoksa veya hata alıyorsanız,

@@ -70,50 +70,50 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _signInWithGoogle() async {
-    // try {
-    //   LoadingDialog.show(context, message: 'Google ile giriş yapılıyor...');
-    //   final userCredential = await GoogleSignInService.signInWithGoogle();
-    //   if (mounted) LoadingDialog.hide(context);
+    try {
+   LoadingDialog.show(context, message: 'Google ile giriş yapılıyor...');
+    final userCredential = await GoogleSignInService.signInWithGoogle();
+    if (mounted) LoadingDialog.hide(context);
       
-    //   if (userCredential != null && mounted) {
-    //     ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
-    //     Navigator.pushReplacement(
-    //       context,
-    //       MaterialPageRoute(builder: (context) => const HomePage()),
-    //     );
-    //   }
-    // } catch (e) {
-    //   if (mounted) {
-    //     LoadingDialog.hide(context);
-    //     ErrorHandler.showError(
-    //       context, 
-    //       ErrorHandler.getFriendlyErrorMessage(e.toString()),
-    //     );
-    //   }
-    // }
+    if (userCredential != null && mounted) {
+   ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
+  Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => const HomePage()),
+     );
+       }
+     } catch (e) {
+       if (mounted) {
+         LoadingDialog.hide(context);
+         ErrorHandler.showError(
+           context, 
+           ErrorHandler.getFriendlyErrorMessage(e.toString()),
+         );
+       }
+     }
   }
 
   Future<void> _submit() async {
-    // if (_formKey.currentState!.validate()) {
-    //   _formKey.currentState!.save();
-    //   try {
-    //     LoadingDialog.show(context, message: isLogin ? 'Giriş yapılıyor...' : 'Hesap oluşturuluyor...');
+     if (_formKey.currentState!.validate()) {
+       _formKey.currentState!.save();
+       try {
+         LoadingDialog.show(context, message: isLogin ? 'Giriş yapılıyor...' : 'Hesap oluşturuluyor...');
         
-    //     if (isLogin) {
-    //       // ... Giriş Mantığı ...
-    //     } else {
-    //       // ... Kayıt Mantığı ...
-    //     }
-    //   } catch (e) {
-    //     if (mounted) {
-    //       LoadingDialog.hide(context);
-    //       ErrorHandler.showError(
-    //         context, 
-    //         ErrorHandler.getFriendlyErrorMessage(e.toString()),
-    //       );
-    //     }
-    //   }
-    // }
+         if (isLogin) {
+           // ... Giriş Mantığı ...
+         } else {
+           // ... Kayıt Mantığı ...
+         }
+       } catch (e) {
+         if (mounted) {
+           LoadingDialog.hide(context);
+           ErrorHandler.showError(
+             context, 
+             ErrorHandler.getFriendlyErrorMessage(e.toString()),
+           );
+         }
+       }
+     }
   }
   
   @override

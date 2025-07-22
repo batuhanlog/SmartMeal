@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'services/error_handler.dart';      // Bu dosyaların projenizde olduğundan emin olun
 import 'services/google_sign_in_service.dart'; // Bu dosyaların projenizde olduğundan emin olun
-import 'auth_page.dart';                      // Bu dosyaların projenizde olduğundan emin olun
+import 'auth_page.dart';                      
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

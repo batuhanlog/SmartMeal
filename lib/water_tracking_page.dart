@@ -6,8 +6,6 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
 
-// DÜZELTME: Tüm yardımcı sınıflar, dosyanın en başına, import'lardan hemen sonraya taşındı.
-// Bu, "WaterEntry bulunamadı" gibi hataları kesin olarak çözer.
 class WaterEntry {
   final double amount;
   final String type;
