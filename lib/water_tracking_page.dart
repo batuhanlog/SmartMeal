@@ -3,6 +3,65 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:convert';
 
+class WaterEntry {
+  final double amount;
+  final String type;
+  final DateTime time;
+  final IconData icon;
+
+  WaterEntry({required this.amount, required this.type, required this.time, required this.icon});
+  
+  String toJson() => json.encode({
+    'amount': amount, 
+    'type': type, 
+    'time': time.toIso8601String(),
+    'icon': icon.codePoint,
+    'fontFamily': icon.fontFamily,
+  });
+
+  static WaterEntry fromJson(String jsonString) {
+    final map = json.decode(jsonString);
+    return WaterEntry(
+      amount: map['amount'],
+      type: map['type'],
+      time: DateTime.parse(map['time']),
+      icon: IconData(map['icon'] ?? Icons.water_drop_outlined.codePoint, fontFamily: map['fontFamily'] ?? 'MaterialIcons'),
+    );
+  }
+}
+
+class _WaveClipper extends CustomClipper<Path> {
+  final double progress;
+
+  _WaveClipper({required this.progress});
+
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.addOval(Rect.fromCircle(center: Offset(size.width / 2, size.height / 2), radius: size.width / 2));
+    
+    double waveHeight = size.height * (1 - progress);
+    
+    Path clipPath = Path();
+    clipPath.moveTo(0, waveHeight);
+    
+    clipPath.quadraticBezierTo(size.width / 4, waveHeight - 20, size.width / 2, waveHeight);
+    clipPath.quadraticBezierTo(size.width * 3 / 4, waveHeight + 20, size.width, waveHeight);
+    
+    clipPath.lineTo(size.width, size.height);
+    clipPath.lineTo(0, size.height);
+    clipPath.close();
+
+    return Path.combine(PathOperation.intersect, path, clipPath);
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => true;
+}
+
+
+// Ana Widget
+>>>>>>> de58c10c2b42a32ea9cf6a7c6ff403b0dc93462e
 class WaterTrackingPage extends StatefulWidget {
   const WaterTrackingPage({super.key});
 

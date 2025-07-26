@@ -1,6 +1,38 @@
 import 'package:flutter/material.dart';
 import 'services/gemini_service.dart';
 
+// --- GEÇİCİ GEMINI SERVICE SIMÜLASYONU ---
+// Eğer 'gemini_service.dart' dosyanız yoksa veya hata alıyorsanız,
+// test etmek için aşağıdaki sahte sınıfı geçici olarak kullanabilirsiniz.
+// Kendi servisinizi bağladığınızda bu sınıfı silin.
+class GeminiService {
+  Future<List<Map<String, dynamic>>> getRecipesByIngredients(List<String> ingredients) async {
+    await Future.delayed(const Duration(seconds: 2)); // 2 saniyelik sahte bir bekleme
+    if (ingredients.contains('HataTesti')) {
+      throw Exception('Yapay zeka servisinde bir sorun oluştu.');
+    }
+    return [
+      {
+        'name': 'Menemen',
+        'emoji': '🍳',
+        'prep_time': '15',
+        'difficulty': 'Kolay',
+        'calories': '250',
+        'missing_ingredients': ['Soğan', 'Sıvı Yağ']
+      },
+      {
+        'name': 'Tavuklu Salata',
+        'emoji': '🥗',
+        'prep_time': '20',
+        'difficulty': 'Kolay',
+        'calories': '350',
+        'missing_ingredients': []
+      },
+    ];
+  }
+}
+// --- ------------------------------------ ---
+
 class IngredientsRecipePage extends StatefulWidget {
   const IngredientsRecipePage({super.key});
 

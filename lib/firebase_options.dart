@@ -59,30 +59,35 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCYjKKQMnU4lZjVfcdF_hBWnoBvvNtFTSI',
+    apiKey: 'AIzaSyAyrQfEPU36DOLxEvT81FJgn3Mk0RvbEPU',
     appId: '1:382371099664:ios:6e18940e32b7c453208695',
     messagingSenderId: '382371099664',
     projectId: 'yemek-asistani-506c9',
     storageBucket: 'yemek-asistani-506c9.firebasestorage.app',
+    androidClientId: '382371099664-5i2k07fc2fha041bmp8tf97qse3p4o15.apps.googleusercontent.com',
+    iosClientId: '382371099664-cptscalvi77a82ki2l40phqva25hjep8.apps.googleusercontent.com',
     iosBundleId: 'com.example.projectx',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCYjKKQMnU4lZjVfcdF_hBWnoBvvNtFTSI',
+    apiKey: 'AIzaSyAyrQfEPU36DOLxEvT81FJgn3Mk0RvbEPU',
     appId: '1:382371099664:ios:6e18940e32b7c453208695',
     messagingSenderId: '382371099664',
     projectId: 'yemek-asistani-506c9',
     storageBucket: 'yemek-asistani-506c9.firebasestorage.app',
+    androidClientId: '382371099664-5i2k07fc2fha041bmp8tf97qse3p4o15.apps.googleusercontent.com',
+    iosClientId: '382371099664-cptscalvi77a82ki2l40phqva25hjep8.apps.googleusercontent.com',
     iosBundleId: 'com.example.projectx',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
     apiKey: 'AIzaSyA6S8CNRt7mIa1s1Ce6gUD4qK1yKDOUrpM',
-    appId: '1:382371099664:web:ba364b06e413fa74208695',
+    appId: '1:382371099664:web:787020f475ad742e208695',
     messagingSenderId: '382371099664',
     projectId: 'yemek-asistani-506c9',
     authDomain: 'yemek-asistani-506c9.firebaseapp.com',
     storageBucket: 'yemek-asistani-506c9.firebasestorage.app',
-    measurementId: 'G-YWMFD6QPYS',
+    measurementId: 'G-JSDCSEGX1G',
   );
+
 }
