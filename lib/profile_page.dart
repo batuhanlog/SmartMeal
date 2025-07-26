@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
   ];
   
   // Sağlık durumu verileri
-  Map<String, dynamic> _healthData = {};
+  final Map<String, dynamic> _healthData = {};
   int _totalHealthScore = 0;
   int _streakCount = 0;
   String _currentRiskLevel = 'Bekliyor';
@@ -613,8 +613,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                   isSelected: secilenDiyetTurleri.contains(type),
                                   onChanged: (isChecked) {
                                     setState(() {
-                                      if (isChecked == true) secilenDiyetTurleri.add(type);
-                                      else secilenDiyetTurleri.remove(type);
+                                      if (isChecked == true) {
+                                        secilenDiyetTurleri.add(type);
+                                      } else {
+                                        secilenDiyetTurleri.remove(type);
+                                      }
                                     });
                                   },
                                   color: primaryColor,
@@ -678,8 +681,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                   isSelected: secilenAlerjiler.contains(allergen),
                                   onChanged: (isChecked) {
                                     setState(() {
-                                      if (isChecked == true) secilenAlerjiler.add(allergen);
-                                      else secilenAlerjiler.remove(allergen);
+                                      if (isChecked == true) {
+                                        secilenAlerjiler.add(allergen);
+                                      } else {
+                                        secilenAlerjiler.remove(allergen);
+                                      }
                                     });
                                   },
                                   color: Colors.orange.shade700,

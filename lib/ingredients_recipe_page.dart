@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'services/gemini_service.dart';
 
 // --- GEÇİCİ GEMINI SERVICE SIMÜLASYONU ---
 // Eğer 'gemini_service.dart' dosyanız yoksa veya hata alıyorsanız,
