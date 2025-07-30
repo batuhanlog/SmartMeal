@@ -3,7 +3,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'services/gemini_service.dart';
+import 'services/calorie_calculator_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Bu versiyonda harici paket veya sorunlu shade kullanımı yoktur.
 
@@ -24,7 +27,6 @@ class _HealthStatus {
   const _HealthStatus(this.label, this.color, this.icon);
 }
 
-
 class _FoodPhotoPageState extends State<FoodPhotoPage> {
   // Renk Paleti (Ana sayfayla uyumlu)
   final Color primaryColor = Colors.green.shade800;
@@ -35,8 +37,31 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
   Uint8List? _imageBytes;
   bool _isAnalyzing = false;
   Map<String, dynamic>? _analysisResult;
+  Map<String, dynamic>? _calorieResult;
+  Map<String, dynamic>? _userProfile;
   final ImagePicker _picker = ImagePicker();
   final GeminiService _geminiService = GeminiService();
+  final CalorieCalculatorService _calorieService = CalorieCalculatorService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (mounted && doc.exists) {
+          setState(() => _userProfile = doc.data());
+        }
+      }
+    } catch (e) {
+      print('Profil yükleme hatası: $e');
+    }
+  }
 
   // --- LOGIC FONKSİYONLARI ---
   Future<void> _takePhoto() async {
@@ -45,9 +70,19 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
       if (photo == null) return;
       if (kIsWeb) {
         final bytes = await photo.readAsBytes();
-        setState(() { _imageBytes = bytes; _imageFile = null; _analysisResult = null; });
+        setState(() { 
+          _imageBytes = bytes; 
+          _imageFile = null; 
+          _analysisResult = null;
+          _calorieResult = null;
+        });
       } else {
-        setState(() { _imageFile = File(photo.path); _imageBytes = null; _analysisResult = null; });
+        setState(() { 
+          _imageFile = File(photo.path); 
+          _imageBytes = null; 
+          _analysisResult = null;
+          _calorieResult = null;
+        });
       }
     } catch (e) {
       if (mounted) _showErrorSnackBar('Fotoğraf çekme hatası: $e');
@@ -60,9 +95,19 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
       if (image == null) return;
       if (kIsWeb) {
         final bytes = await image.readAsBytes();
-        setState(() { _imageBytes = bytes; _imageFile = null; _analysisResult = null; });
+        setState(() { 
+          _imageBytes = bytes; 
+          _imageFile = null; 
+          _analysisResult = null;
+          _calorieResult = null;
+        });
       } else {
-        setState(() { _imageFile = File(image.path); _imageBytes = null; _analysisResult = null; });
+        setState(() { 
+          _imageFile = File(image.path); 
+          _imageBytes = null; 
+          _analysisResult = null;
+          _calorieResult = null;
+        });
       }
     } catch (e) {
       if (mounted) _showErrorSnackBar('Galeri erişim hatası: $e');
@@ -75,20 +120,27 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
     try {
       Uint8List? imageBytes = _imageBytes ?? await _imageFile?.readAsBytes();
       if (imageBytes == null) throw Exception("Görsel verisi okunamadı.");
-      final result = await _geminiService.analyzeFoodPhoto(imageBytes);
+      
+      // Paralel olarak hem yemek analizi hem de kalori hesaplama yap
+      final results = await Future.wait([
+        _geminiService.analyzeFoodPhoto(imageBytes),
+        _calorieService.calculateCaloriesFromPhoto(imageBytes),
+      ]);
+      
       if (mounted) {
         setState(() {
           _analysisResult = {
-            'foodName': result['food_name'] ?? 'Bilinmeyen Yemek',
-            'calories': result['calories'] ?? 0,
-            'protein': result['protein'] ?? 0,
-            'carbs': result['carbs'] ?? 0,
-            'fat': result['fat'] ?? 0,
-            'confidence': (result['confidence'] ?? 0) / 100.0,
-            'healthScore': result['health_score'] ?? 5,
-            'analysis': result['analysis'] ?? 'Analiz yapılamadı.',
-            'recommendations': result['suggestions'] as List<dynamic>? ?? ['Öneri bulunmuyor.'],
+            'foodName': results[0]['food_name'] ?? 'Bilinmeyen Yemek',
+            'calories': results[0]['calories'] ?? 0,
+            'protein': results[0]['protein'] ?? 0,
+            'carbs': results[0]['carbs'] ?? 0,
+            'fat': results[0]['fat'] ?? 0,
+            'confidence': (results[0]['confidence'] ?? 0) / 100.0,
+            'healthScore': results[0]['health_score'] ?? 5,
+            'analysis': results[0]['analysis'] ?? 'Analiz yapılamadı.',
+            'recommendations': results[0]['suggestions'] as List<dynamic>? ?? ['Öneri bulunmuyor.'],
           };
+          _calorieResult = results[1];
         });
       }
     } catch (e) {
@@ -102,13 +154,27 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red.shade700));
   }
 
+  // Günlük kalori hedefi hesaplama
+  Map<String, dynamic>? _getDailyCalorieTarget() {
+    if (_userProfile == null) return null;
+    
+    return _calorieService.calculateDailyCalorieNeeds(
+      age: _userProfile!['age'] ?? 25,
+      gender: _userProfile!['gender'] ?? 'Erkek',
+      weight: _userProfile!['weight']?.toDouble() ?? 70.0,
+      height: _userProfile!['height']?.toDouble() ?? 170.0,
+      activityLevel: _userProfile!['activityLevel'] ?? 'Orta',
+      goal: _userProfile!['goal'] ?? 'maintain',
+    );
+  }
+
   // --- ANA WIDGET BUILD ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Yemek Analizi'),
+        title: const Text('Yemek & Kalori Analizi'),
         backgroundColor: backgroundColor,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -122,6 +188,7 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
             _buildActionButtons(),
             const SizedBox(height: 24),
             if (_analysisResult != null) _buildAnalysisResult(),
+            if (_calorieResult != null) _buildCalorieResult(),
             const SizedBox(height: 20),
           ],
         ),
@@ -174,7 +241,7 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
             icon: _isAnalyzing
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : const Icon(Icons.auto_awesome),
-            label: Text(_isAnalyzing ? 'Analiz Ediliyor...' : 'Lezzeti Analiz Et', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            label: Text(_isAnalyzing ? 'Analiz Ediliyor...' : 'Yemek & Kalori Analizi', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
               foregroundColor: Colors.white,
@@ -266,14 +333,152 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
               )).toList(),
             ),
           ),
-          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
 
-          OutlinedButton.icon(
-            onPressed: () => setState(() { _imageFile = null; _imageBytes = null; _analysisResult = null; }),
-            icon: const Icon(Icons.refresh),
-            label: const Text('Yeni Bir Lezzet Analiz Et'),
-            style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 48), foregroundColor: primaryColor, side: BorderSide(color: primaryColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+  Widget _buildCalorieResult() {
+    final result = _calorieResult!;
+    final dailyTarget = _getDailyCalorieTarget();
+    final totalCalories = result['total_calories'] ?? 0;
+    final targetCalories = dailyTarget?['target_calories'] ?? 2000;
+    final percentage = (totalCalories / targetCalories * 100).clamp(0, 100);
+
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white, 
+        borderRadius: BorderRadius.circular(20), 
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))]
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('📊 Detaylı Kalori Analizi', Icons.calculate_outlined),
+          const SizedBox(height: 20),
+
+          // Günlük hedef karşılaştırması
+          if (dailyTarget != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Günlük Hedef: ${targetCalories} kcal', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text('Bu Öğün: $totalCalories kcal', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: percentage / 100,
+                    backgroundColor: Colors.grey.shade300,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      percentage > 100 ? Colors.red : Colors.green,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Günlük hedefinizin %${percentage.toStringAsFixed(1)}\'i',
+                    style: TextStyle(
+                      color: percentage > 100 ? Colors.red : Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+
+          // Toplam besin değerleri
+          _buildSectionTitle('Toplam Besin Değerleri', Icons.analytics_outlined),
+          const SizedBox(height: 16),
+          GridView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, 
+              childAspectRatio: 2.2, 
+              mainAxisSpacing: 12, 
+              crossAxisSpacing: 12
+            ),
+            children: [
+              _buildNutritionInfo('Toplam Kalori', '${result['total_calories']}', Colors.orange),
+              _buildNutritionInfo('Toplam Protein', '${result['total_protein']}g', Colors.blue),
+              _buildNutritionInfo('Toplam Karbonhidrat', '${result['total_carbs']}g', Colors.purple),
+              _buildNutritionInfo('Toplam Yağ', '${result['total_fat']}g', Colors.amber),
+            ],
           ),
+          const SizedBox(height: 20),
+
+          // Yemek listesi
+          _buildSectionTitle('Yemek Detayları', Icons.restaurant_menu_outlined),
+          const SizedBox(height: 12),
+          ...(result['foods'] as List<dynamic>).map((food) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        food['name'] ?? 'Bilinmeyen',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        food['portion'] ?? '',
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    '${food['calories']} kcal',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+              ],
+            ),
+          )).toList(),
+          const SizedBox(height: 20),
+
+          // Öneriler
+          if (result['recommendations'] != null) ...[
+            _buildSectionTitle('Öneriler', Icons.lightbulb_outline_rounded),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
+              child: Column(
+                children: (result['recommendations'] as List<dynamic>).map((rec) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: Row(children: [
+                    Icon(Icons.check, size: 20, color: primaryColor),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(rec.toString(), style: const TextStyle(fontSize: 15, color: Colors.black54))),
+                  ]),
+                )).toList(),
+              ),
+            ),
+          ],
         ],
       ),
     );
