@@ -94,44 +94,28 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _submit() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      try {
-        LoadingDialog.show(context, message: isLogin ? 'Giriş yapılıyor...' : 'Hesap oluşturuluyor...');
-
-        if (isLogin) {
-          // 🔑 E-posta/Şifre ile giriş işlemi
-          final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-          );
-
-          if (mounted) {
-            LoadingDialog.hide(context);
-            ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          }
-
-        } else {
-          // 👤 Kayıt işlemi (isteğe bağlı)
-        }
-
-      } catch (e) {
-        if (mounted) {
-          LoadingDialog.hide(context);
-          ErrorHandler.showError(
-            context,
-            ErrorHandler.getFriendlyErrorMessage(e.toString()),
-          );
-        }
-      }
-    }
+     if (_formKey.currentState!.validate()) {
+       _formKey.currentState!.save();
+       try {
+         LoadingDialog.show(context, message: isLogin ? 'Giriş yapılıyor...' : 'Hesap oluşturuluyor...');
+        
+         if (isLogin) {
+           // ... Giriş Mantığı ...
+         } else {
+           // ... Kayıt Mantığı ...
+         }
+       } catch (e) {
+         if (mounted) {
+           LoadingDialog.hide(context);
+           ErrorHandler.showError(
+             context, 
+             ErrorHandler.getFriendlyErrorMessage(e.toString()),
+           );
+         }
+       }
+     }
   }
-
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

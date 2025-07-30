@@ -4,6 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'meal_suggestion_page.dart';
 import 'food_photo_page.dart';
 import 'ingredients_recipe_page.dart';
+import 'manual_calorie_page.dart';
+import 'daily_calorie_tracker.dart';
+import 'widgets/quick_calorie_widget.dart';
 import 'services/google_sign_in_service.dart';
 import 'services/error_handler.dart';
 import 'auth_page.dart';
@@ -101,37 +104,23 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Yeni Header: Profil Bilgisi ve İkonlar
-              _buildHeaderProfile(),
+              _buildHeader(),
               const SizedBox(height: 24),
-
-              // 2. Ana Eylem Kartı: Yemek Önerisi
-              _buildMainActionCard(),
-              const SizedBox(height: 24),
-
-              // 3. Özellikler Başlığı
-              const Text(
-                'Tüm Özellikler',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: _textColor,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // 4. Özellikler Izgarası
-              _buildFeaturesGrid(),
+              _buildMealSuggestionCard(),
               const SizedBox(height: 20),
+              const QuickCalorieWidget(),
+              const SizedBox(height: 20),
+              _buildFeaturesGrid(),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
   /// Ekranın en üstünde yer alan, profil fotoğrafı, isim ve ikonları içeren bölüm.
-  Widget _buildHeaderProfile() {
+  Widget _buildHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -183,17 +172,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Sağ üst köşedeki ikon butonlar için yardımcı widget.
-  Widget _buildIconButton(IconData icon, VoidCallback onPressed) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: Icon(icon, color: _subtleTextColor, size: 24),
-      splashRadius: 24,
-    );
-  }
-  
   /// Kullanıcıyı yemek önerisi almaya teşvik eden ana kart.
-  Widget _buildMainActionCard() {
+  Widget _buildMealSuggestionCard() {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) => const MealSuggestionPage()));
@@ -245,6 +225,15 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  /// Sağ üst köşedeki ikon butonlar için yardımcı widget.
+  Widget _buildIconButton(IconData icon, VoidCallback onPressed) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon, color: _subtleTextColor, size: 24),
+      splashRadius: 24,
+    );
+  }
   
   /// Tüm özellikleri içeren 2 sütunlu ızgara yapısı.
   Widget _buildFeaturesGrid() {
@@ -267,6 +256,18 @@ class _HomePageState extends State<HomePage> {
           title: 'Yemek Analizi',
           color: Colors.blue.shade700,
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FoodPhotoPage())),
+        ),
+        _buildFeatureCard(
+          icon: Icons.calculate_outlined,
+          title: 'Kalori Hesapla',
+          color: Colors.green.shade700,
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ManualCaloriePage())),
+        ),
+        _buildFeatureCard(
+          icon: Icons.track_changes_outlined,
+          title: 'Kalori Takibi',
+          color: Colors.indigo.shade700,
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DailyCalorieTracker())),
         ),
          _buildFeatureCard(
           icon: Icons.history,
@@ -359,5 +360,40 @@ class _HomePageState extends State<HomePage> {
       return avatars[selectedIndex % avatars.length];
     }
     return '👤';
+  }
+
+  /// Alt navigasyon çubuğu.
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: _cardColor,
+      selectedItemColor: _primaryColor,
+      unselectedItemColor: _subtleTextColor,
+      currentIndex: 0,
+      onTap: (index) {
+        switch (index) {
+          case 1:
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+            break;
+          case 2:
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+            break;
+        }
+      },
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Ana Sayfa',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profil',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Ayarlar',
+        ),
+      ],
+    );
   }
 }
