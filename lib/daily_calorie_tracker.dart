@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class EarlyDiagnosisPage extends StatefulWidget {
-  const EarlyDiagnosisPage({super.key});
+class DailyCalorieTracker extends StatefulWidget {
+  const DailyCalorieTracker({super.key});
 
   @override
-  State<EarlyDiagnosisPage> createState() => _EarlyDiagnosisPageState();
+  State<DailyCalorieTracker> createState() => _DailyCalorieTrackerState();
 }
 
-class _EarlyDiagnosisPageState extends State<EarlyDiagnosisPage> {
+class _DailyCalorieTrackerState extends State<DailyCalorieTracker> {
   // Modern renk paleti
   static const Color _primaryColor = Color(0xFF2E7D32);
   static const Color _accentColor = Color(0xFF66BB6A);
@@ -21,7 +21,7 @@ class _EarlyDiagnosisPageState extends State<EarlyDiagnosisPage> {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
-        title: const Text('Erken Tanı Merkezi'),
+        title: const Text('Günlük Kalori Takibi'),
         backgroundColor: _primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -33,13 +33,13 @@ class _EarlyDiagnosisPageState extends State<EarlyDiagnosisPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.health_and_safety,
+                Icons.local_fire_department,
                 size: 80,
                 color: _primaryColor,
               ),
               SizedBox(height: 24),
               Text(
-                '🏥 Erken Tanı Merkezi',
+                '🔥 Günlük Kalori Takibi',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -49,7 +49,7 @@ class _EarlyDiagnosisPageState extends State<EarlyDiagnosisPage> {
               ),
               SizedBox(height: 16),
               Text(
-                'Sağlık durumunuzun erken tanısı için gelişmiş anket sistemi yakında aktif olacak.',
+                'Günlük kalori alımınızı takip edebileceğiniz gelişmiş özellik yakında aktif olacak.',
                 style: TextStyle(
                   fontSize: 16,
                   color: _subtleTextColor,

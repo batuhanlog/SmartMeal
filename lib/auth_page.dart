@@ -26,6 +26,7 @@ class _AuthPageState extends State<AuthPage> {
   static const Color _subtleTextColor = Color(0xFF6C757D);
 
   bool isLogin = true;
+  bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
   
   // Form kontrolcüleri
@@ -70,44 +71,53 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _signInWithGoogle() async {
+    setState(() {
+      isLoading = true;
+    });
+    
     try {
-   LoadingDialog.show(context, message: 'Google ile giriş yapılıyor...');
-    final userCredential = await GoogleSignInService.signInWithGoogle();
-    if (mounted) LoadingDialog.hide(context);
+      final userCredential = await GoogleSignInService.signInWithGoogle();
       
-    if (userCredential != null && mounted) {
-   ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
-  Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(builder: (context) => const HomePage()),
-     );
-       }
-     } catch (e) {
-       if (mounted) {
-         LoadingDialog.hide(context);
-         ErrorHandler.showError(
-           context, 
-           ErrorHandler.getFriendlyErrorMessage(e.toString()),
-         );
-       }
-     }
+      if (userCredential != null && mounted) {
+        ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ErrorHandler.showError(
+          context, 
+          ErrorHandler.getFriendlyErrorMessage(e.toString()),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      
+      setState(() {
+        isLoading = true;
+      });
+      
       try {
-        LoadingDialog.show(context, message: isLogin ? 'Giriş yapılıyor...' : 'Hesap oluşturuluyor...');
-
         if (isLogin) {
           // 🔑 E-posta/Şifre ile giriş işlemi
-          final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
 
           if (mounted) {
-            LoadingDialog.hide(context);
             ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
             Navigator.pushReplacement(
               context,
@@ -121,11 +131,16 @@ class _AuthPageState extends State<AuthPage> {
 
       } catch (e) {
         if (mounted) {
-          LoadingDialog.hide(context);
           ErrorHandler.showError(
             context,
             ErrorHandler.getFriendlyErrorMessage(e.toString()),
           );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
         }
       }
     }
