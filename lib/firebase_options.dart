@@ -48,6 +48,9 @@ class DefaultFirebaseOptions {
     authDomain: 'yemek-asistani-506c9.firebaseapp.com',
     storageBucket: 'yemek-asistani-506c9.firebasestorage.app',
     measurementId: 'G-YWMFD6QPYS',
+    // Web için Google Client ID
+    iosClientId: '382371099664-cptscalvi77a82ki2l40phqva25hjep8.apps.googleusercontent.com',
+    androidClientId: '382371099664-5i2k07fc2fha041bmp8tf97qse3p4o15.apps.googleusercontent.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
