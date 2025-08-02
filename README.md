@@ -406,3 +406,49 @@ Panomuzun linki yukarıda TRELLO yazısı ile ve oklar yardımıyla gösterilmi�
 </details>
 
 
+## 📍 SPRINT 3
+
+<details>
+<summary><strong>Sprint Notları </strong></summary>
+
+Sprint 3 süresince projenin mevcut yapısını iyileştirmeye odaklanarak, yenilikçi ve çeşitli özellikler geliştirmeyi hedefledik.  
+Bu kapsamda:
+
+- Kullanıcı arayüzünde (UI) önemli iyileştirmeler yapıldı.  
+- Projeye özgünlük ve işlevsellik katan yeni modüller eklendi.  
+- Önceki sprintlerde tespit edilen hata ve çökmeler analiz edilerek giderilmeye çalışıldı.  
+- Yapay zekâ entegrasyonu güçlendirilerek sistemin genel kararlılığı artırıldı.
+
+Sprint 3, projenin hem teknik altyapısını hem de kullanıcı deneyimini ileri taşıyan önemli bir geliştirme dönemi oldu.
+
+</details>
+
+<details>
+<summary><strong>Sprint Planı</strong></summary>
+
+**Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
+
+SMEAL projesi toplamda **300 puanlık** bir geliştirme yüküne sahiptir. Proje başında bu yük, her biri yaklaşık **100 puan** olacak şekilde üç eşit sprint’e bölünerek planlanmıştır.
+
+Sprint 3’te, projenin farklılaşmasını sağlayacak özgün özelliklerin geliştirilmesi, yapay zekâ entegrasyonlarının tamamlanması ve daha önce tespit edilen çökme problemlerinin giderilmesi hedeflenmiştir.
+
+Sprintlerin eşit ağırlıkta planlanması, takım üyelerinin takvimlerinin uyuşmadığı durumlarda iş yükünün dengeli dağıtılabilmesi ve adil bir iş bölümü sağlanabilmesi açısından tercih edilmiştir.
+
+</details>
+
+<details>
+<summary><strong>Daily Scrum Toplantıları</strong></summary>
+
+Sprint 3 boyunca Daily Scrum toplantıları, **Google Meet** üzerinden çevrim içi olarak **haftada bir** gerçekleştirilmiştir.  
+Bunun dışında, hafta içi ekip içi iletişimi sağlamak amacıyla **WhatsApp** üzerinden haberleşme sürdürülmüştür.  
+Toplantı notları ve görev güncellemeleri büyük ölçüde bu çevrim içi yazışmalar aracılığıyla kayıt altına alınmıştır.
+
+📎 Toplantı notları, iletişim dökümanları ve ekran görüntüleri için:  
+
+
+</details>
+
+
+
+
+
