@@ -4,7 +4,7 @@ import 'dart:convert';
 
 class GeminiService {
   // Gemini API anahtarı
-  static const String _apiKey = 'AIzaSyBEH_GZMDh1XvPQUfxbwhYh76g_YaZ-LAU';
+  static const String _apiKey = 'AIzaSyBIJkKmiCZjlcKTIfsI25gs0NLxPhG94Fs';
   
   late final GenerativeModel _model;
   late final GenerativeModel _visionModel;
@@ -89,6 +89,15 @@ JSON formatında döndür (sadece JSON, başka açıklama yok):
   // Yemek fotoğrafı analizi
   Future<Map<String, dynamic>> analyzeFoodPhoto(Uint8List imageBytes) async {
     try {
+      // Dosya boyutu kontrolü
+      if (imageBytes.isEmpty) {
+        throw Exception('Görsel dosyası boş');
+      }
+      
+      if (imageBytes.length > 10 * 1024 * 1024) { // 10MB limit
+        throw Exception('Görsel dosyası çok büyük (max 10MB)');
+      }
+      
       final now = DateTime.now();
       final formattedDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       
@@ -97,23 +106,23 @@ Bu fotoğrafı analiz et ve şu adımları takip et:
 
 1. ÖNCE: Fotoğrafta yemek, içecek veya herhangi bir besin maddesi var mı kontrol et
 2. EĞER yemek/besin YOKSA: "is_food": false döndür
-3. EĞER yemek/besin VARSA: Detaylı analiz yap ve tarihi bilgiler ver
+3. EĞER yemek/besin VARSA: Detaylı analiz yap
 
 YEMEK VARSA YAPILACAKLAR:
-- Fotoğrafta gördüklerini spesifik olarak tanımla
-- Yemeğin tarihsel kökenini ve kültürel önemini anlat
-- Bu yemeğin hangi ülke/bölge mutfağından geldiğini açıkla
-- Tarihte bu yemeğin nasıl ortaya çıktığını anlat
-- Geleneksel yapılış şeklini ve modern varyasyonlarını açıkla
+- Fotoğrafta gördüklerini tanımla (Eğer tam olarak ne olduğunu bilmiyorsan, görsel özelliklerini tanımla)
+- Örnek: "kırmızı soslu makarna", "tavuklu pirinç", "yeşil salata", "çikolatalı tatlı"
+- Asla "bilinmeyen", "analiz edilen yemek" gibi genel ifadeler kullanma
+- Gördüklerini spesifik olarak tanımla
+- Yemeğin tarihçesi ve kökeni hakkında kısa bilgi ver
 
 YEMEK YOKSA:
 - Sadece is_food: false döndür
 
-JSON formatında döndür:
+MUTLAKA JSON formatında döndür (sadece JSON, başka açıklama yok):
 {
   "is_food": true/false,
-  "food_name": "Gördüğün yemeğin spesifik adı",
-  "emoji": "uygun emoji",
+  "food_name": "Gördüğün yemeğin/besinin spesifik tanımı",
+  "emoji": "🍽️",
   "confidence": 75,
   "calories": 320,
   "protein": 25,
@@ -123,20 +132,18 @@ JSON formatında döndür:
   "sodium": 450,
   "sugar": 5,
   "health_score": 7,
-  "recipe": "Bu yemeğin geleneksel yapılış tarifi",
-  "analysis": "Görsel analizi ve besin değerleri açıklaması",
-  "historical_info": "Bu yemeğin tarihi, kökeni, kültürel önemi ve hikayesi. Hangi dönemde ortaya çıktığı, hangi kültürden geldiği, nasıl yayıldığı gibi detaylı bilgiler",
-  "cultural_significance": "Bu yemeğin kültürel önemi ve farklı kültürlerdeki varyasyonları",
-  "traditional_preparation": "Geleneksel yapılış yöntemi ve modern zamanlarda nasıl değiştiği",
+  "recipe": "Bu yemeğin muhtemel yapılış tarifi",
+  "analysis": "Gördüklerinin detaylı açıklaması ve besin değeri analizi",
+  "food_history": "Bu yemeğin tarihçesi, kökeni ve kültürel önemi hakkında ilginç bilgiler",
   "suggestions": ["beslenme önerisi 1", "öneri 2", "öneri 3"],
   "analysis_date": "$formattedDate"
 }
 
 ÖRNEKLER:
-- Makarna: İtalyan kökenli, Marco Polo efsanesi, modern varyasyonları
-- Pilav: Orta Asya kökenli, Türk mutfağında gelişimi
-- Hummus: Orta Doğu kökenli, antik çağlardan beri tüketimi
-- Sushi: Japon kökenli, fermantasyondan modern forma evrimi
+- Makarna görüyorsan: "Kırmızı soslu spagetti" veya "Beyaz soslu penne"
+- Salata görüyorsan: "Karışık yeşil salata" veya "Domates salatası"
+- Tatlı görüyorsan: "Çikolatalı pasta" veya "Meyve tart"
+- Et görüyorsan: "Izgara tavuk" veya "Köfte"
 ''';
 
       final content = [
@@ -146,110 +153,101 @@ JSON formatında döndür:
         ])
       ];
 
+      print('Gemini API\'ye istek gönderiliyor...');
       final response = await _visionModel.generateContent(content);
+      print('Gemini API yanıtı alındı: ${response.text?.substring(0, 100)}...');
       
-      if (response.text != null) {
-        try {
-          // JSON'u temizle ve parse et
-          String cleanedResponse = response.text!
-              .replaceAll('```json', '')
-              .replaceAll('```', '')
-              .trim();
-          
-          final Map<String, dynamic> jsonResponse = jsonDecode(cleanedResponse);
-          
-          // Eğer yemek değilse özel mesaj döndür
-          if (jsonResponse['is_food'] == false) {
-            return {
-              'food_name': 'Yemek Tespit Edilemedi',
-              'emoji': '❌',
-              'confidence': 0,
-              'calories': 0,
-              'protein': 0,
-              'carbs': 0,
-              'fat': 0,
-              'fiber': 0,
-              'sodium': 0,
-              'sugar': 0,
-              'health_score': 0,
-              'recipe': 'Bu görsel herhangi bir yemek içermiyor. Lütfen yemek görseli atın.',
-              'analysis': 'Fotoğrafta yemek veya besin maddesi tespit edilemedi.',
-              'historical_info': 'Analiz edilecek yemek bulunamadı.',
-              'cultural_significance': 'Analiz edilecek yemek bulunamadı.',
-              'traditional_preparation': 'Analiz edilecek yemek bulunamadı.',
-              'suggestions': ['Yemek fotoğrafı çekin', 'Daha net bir görsel kullanın', 'Farklı açıdan fotoğraf çekin'],
-              'analysis_date': formattedDate,
-              'error_type': 'not_food'
-            };
-          }
-          
-          // Zorunlu alanları kontrol et ve varsayılan değerler ata
-          jsonResponse['food_name'] = jsonResponse['food_name'] ?? 'Görünen Besin';
-          jsonResponse['emoji'] = jsonResponse['emoji'] ?? '🍽️';
-          jsonResponse['confidence'] = jsonResponse['confidence'] ?? 70;
-          jsonResponse['analysis_date'] = jsonResponse['analysis_date'] ?? formattedDate;
-          jsonResponse['health_score'] = jsonResponse['health_score'] ?? 6;
-          jsonResponse['calories'] = jsonResponse['calories'] ?? 250;
-          jsonResponse['protein'] = jsonResponse['protein'] ?? 15;
-          jsonResponse['carbs'] = jsonResponse['carbs'] ?? 30;
-          jsonResponse['fat'] = jsonResponse['fat'] ?? 10;
-          jsonResponse['recipe'] = jsonResponse['recipe'] ?? 'Tarif bilgisi mevcut değil.';
-          jsonResponse['analysis'] = jsonResponse['analysis'] ?? 'Beslenme analizi yapıldı.';
-          jsonResponse['historical_info'] = jsonResponse['historical_info'] ?? 'Tarihi bilgi mevcut değil.';
-          jsonResponse['cultural_significance'] = jsonResponse['cultural_significance'] ?? 'Kültürel bilgi mevcut değil.';
-          jsonResponse['traditional_preparation'] = jsonResponse['traditional_preparation'] ?? 'Geleneksel tarif bilgisi mevcut değil.';
-          jsonResponse['suggestions'] = jsonResponse['suggestions'] ?? ['Dengeli beslenmeye dikkat edin', 'Su tüketiminizi artırın'];
-          
-          return jsonResponse;
-        } catch (parseError) {
-          print('JSON Parse Error: $parseError');
-          print('Raw response: ${response.text}');
-          
-          // Parse hatası durumunda varsayılan değerler döndür
+      if (response.text == null || response.text!.isEmpty) {
+        throw Exception('Gemini API\'den boş yanıt alındı');
+      }
+
+      try {
+        // JSON'u temizle ve parse et
+        String cleanedResponse = response.text!
+            .replaceAll('```json', '')
+            .replaceAll('```', '')
+            .replaceAll('`', '')
+            .trim();
+        
+        // JSON başlangıcını bul
+        int jsonStart = cleanedResponse.indexOf('{');
+        if (jsonStart != -1) {
+          cleanedResponse = cleanedResponse.substring(jsonStart);
+        }
+        
+        // JSON sonunu bul
+        int jsonEnd = cleanedResponse.lastIndexOf('}');
+        if (jsonEnd != -1) {
+          cleanedResponse = cleanedResponse.substring(0, jsonEnd + 1);
+        }
+        
+        print('Temizlenmiş JSON: $cleanedResponse');
+        
+        final Map<String, dynamic> jsonResponse = jsonDecode(cleanedResponse);
+        
+        // Eğer yemek değilse özel mesaj döndür
+        if (jsonResponse['is_food'] == false) {
           return {
-            'food_name': 'Fotoğraf Analizi',
-            'emoji': '🍽️',
-            'confidence': 60,
-            'calories': 250,
-            'protein': 15,
-            'carbs': 30,
-            'fat': 10,
-            'fiber': 5,
-            'sodium': 300,
-            'sugar': 8,
-            'health_score': 6,
-            'recipe': 'Bu yemek için detaylı tarif bilgisi mevcut değil.',
-            'analysis': 'Fotoğraf üzerinden beslenme analizi yapıldı.',
-            'historical_info': 'Analiz hatası nedeniyle tarihi bilgi alınamadı.',
-            'cultural_significance': 'Analiz hatası nedeniyle kültürel bilgi alınamadı.',
-            'traditional_preparation': 'Analiz hatası nedeniyle geleneksel tarif bilgisi alınamadı.',
-            'suggestions': ['Dengeli beslenmeye dikkat edin', 'Porsiyon kontrolü yapın', 'Su tüketiminizi artırın'],
+            'food_name': 'Yemek Tespit Edilemedi',
+            'emoji': '❌',
+            'confidence': 0,
+            'calories': 0,
+            'protein': 0,
+            'carbs': 0,
+            'fat': 0,
+            'fiber': 0,
+            'sodium': 0,
+            'sugar': 0,
+            'health_score': 0,
+            'recipe': 'Bu görsel herhangi bir yemek içermiyor. Lütfen yemek görseli atın.',
+            'analysis': 'Fotoğrafta yemek veya besin maddesi tespit edilemedi.',
+            'food_history': 'Yemek tespit edilemediği için tarihçe bilgisi sağlanamıyor.',
+            'suggestions': ['Yemek fotoğrafı çekin', 'Daha net bir görsel kullanın', 'Farklı açıdan fotoğraf çekin'],
             'analysis_date': formattedDate,
+            'error_type': 'not_food'
           };
         }
+        
+        // Zorunlu alanları kontrol et ve varsayılan değerler ata
+        jsonResponse['food_name'] = jsonResponse['food_name'] ?? 'Görünen Besin';
+        jsonResponse['emoji'] = jsonResponse['emoji'] ?? '🍽️';
+        jsonResponse['confidence'] = jsonResponse['confidence'] ?? 70;
+        jsonResponse['analysis_date'] = jsonResponse['analysis_date'] ?? formattedDate;
+        jsonResponse['health_score'] = jsonResponse['health_score'] ?? 6;
+        jsonResponse['calories'] = jsonResponse['calories'] ?? 250;
+        jsonResponse['protein'] = jsonResponse['protein'] ?? 15;
+        jsonResponse['carbs'] = jsonResponse['carbs'] ?? 30;
+        jsonResponse['fat'] = jsonResponse['fat'] ?? 10;
+        jsonResponse['recipe'] = jsonResponse['recipe'] ?? 'Tarif bilgisi mevcut değil.';
+        jsonResponse['analysis'] = jsonResponse['analysis'] ?? 'Beslenme analizi yapıldı.';
+        jsonResponse['food_history'] = jsonResponse['food_history'] ?? 'Bu yemek hakkında tarihçe bilgisi mevcut değil.';
+        jsonResponse['suggestions'] = jsonResponse['suggestions'] ?? ['Dengeli beslenmeye dikkat edin', 'Su tüketiminizi artırın'];
+        
+        return jsonResponse;
+      } catch (parseError) {
+        print('JSON Parse Error: $parseError');
+        print('Raw response: ${response.text}');
+        
+        // Parse hatası durumunda varsayılan değerler döndür
+        return {
+          'food_name': 'Fotoğraf Analizi',
+          'emoji': '🍽️',
+          'confidence': 60,
+          'calories': 250,
+          'protein': 15,
+          'carbs': 30,
+          'fat': 10,
+          'fiber': 5,
+          'sodium': 300,
+          'sugar': 8,
+          'health_score': 6,
+          'recipe': 'Bu yemek için detaylı tarif bilgisi mevcut değil.',
+          'analysis': 'Fotoğraf üzerinden beslenme analizi yapıldı.',
+          'food_history': 'Tarihçe bilgisi analiz edilemedi.',
+          'suggestions': ['Dengeli beslenmeye dikkat edin', 'Porsiyon kontrolü yapın', 'Su tüketiminizi artırın'],
+          'analysis_date': formattedDate,
+        };
       }
-      
-      // Response yoksa varsayılan değerler döndür
-      return {
-        'food_name': 'Fotoğraf Analizi Başarısız',
-        'emoji': '📷',
-        'confidence': 30,
-        'calories': 200,
-        'protein': 12,
-        'carbs': 25,
-        'fat': 8,
-        'fiber': 4,
-        'sodium': 250,
-        'sugar': 6,
-        'health_score': 5,
-        'recipe': 'Fotoğraf analiz edilemedi.',
-        'analysis': 'Görsel analiz tamamlanamadı.',
-        'historical_info': 'Fotoğraf analiz edilemediği için tarihi bilgi mevcut değil.',
-        'cultural_significance': 'Fotoğraf analiz edilemediği için kültürel bilgi mevcut değil.',
-        'traditional_preparation': 'Fotoğraf analiz edilemediği için geleneksel tarif bilgisi mevcut değil.',
-        'suggestions': ['Daha net bir fotoğraf çekin', 'Beslenme uzmanına danışın'],
-        'analysis_date': formattedDate,
-      };
     } catch (e) {
       print('Gemini Vision API Error: $e');
       
@@ -258,7 +256,7 @@ JSON formatında döndür:
       final formattedDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       
       return {
-        'food_name': 'Analiz Hatası',
+        'food_name': 'Analiz Hatası: ${e.toString()}',
         'emoji': '⚠️',
         'confidence': 30,
         'calories': 150,
@@ -271,9 +269,7 @@ JSON formatında döndür:
         'health_score': 4,
         'recipe': 'Analiz sırasında hata oluştu.',
         'analysis': 'Teknik bir sorun nedeniyle analiz tamamlanamadı.',
-        'historical_info': 'Bağlantı hatası nedeniyle tarihi bilgi alınamadı.',
-        'cultural_significance': 'Bağlantı hatası nedeniyle kültürel bilgi alınamadı.',
-        'traditional_preparation': 'Bağlantı hatası nedeniyle geleneksel tarif bilgisi alınamadı.',
+        'food_history': 'Hata nedeniyle tarihçe bilgisi alınamadı.',
         'suggestions': ['Tekrar deneyin', 'İnternet bağlantınızı kontrol edin'],
         'analysis_date': formattedDate,
       };
@@ -424,53 +420,6 @@ NOT: Tüm öneriler kullanıcının yaş, boy, kilo özelliklerine göre kişise
           jsonResponse['overall_score'] = jsonResponse['overall_score'] ?? 7.0;
           jsonResponse['summary'] = jsonResponse['summary'] ?? 'Bu hafta sağlık durumunuz genel olarak iyi seviyede.';
           
-          // Alt kategorileri kontrol et
-          if (jsonResponse['nutrition_analysis'] == null) {
-            jsonResponse['nutrition_analysis'] = {
-              'average_calories': 2000,
-              'protein_adequacy': 'Yeterli',
-              'carb_balance': 'Dengeli',
-              'fat_intake': 'Normal',
-              'vitamin_minerals': 'İyi',
-              'hydration': 'Normal'
-            };
-          }
-          
-          if (jsonResponse['activity_analysis'] == null) {
-            jsonResponse['activity_analysis'] = {
-              'weekly_steps': weeklyActivity['total_steps'] ?? 35000,
-              'exercise_frequency': weeklyActivity['workout_sessions'] ?? 3,
-              'calories_burned': 2400,
-              'activity_level': 'Orta'
-            };
-          }
-          
-          if (jsonResponse['achievements'] == null) {
-            jsonResponse['achievements'] = [
-              'Bu hafta düzenli aktivite gerçekleştirdiniz',
-              'Beslenme alışkanlıklarınızda gelişme var',
-              'Sağlıklı yaşam hedeflerinize odaklandınız'
-            ];
-          }
-          
-          if (jsonResponse['recommendations'] == null) {
-            jsonResponse['recommendations'] = [
-              'Su tüketiminizi artırın',
-              'Düzenli egzersiz yapın',
-              'Dengeli beslenmeye dikkat edin'
-            ];
-          }
-          
-          if (jsonResponse['next_week_goals'] == null) {
-            jsonResponse['next_week_goals'] = [
-              'Günlük 8000 adım hedefi',
-              'Haftada 3-4 kez egzersiz',
-              'Günde 2L su tüketimi'
-            ];
-          }
-          
-          jsonResponse['motivation_message'] = jsonResponse['motivation_message'] ?? 'Sağlıklı yaşam yolculuğunuzda başarılarınız devam ediyor!';
-          
           return jsonResponse;
         } catch (parseError) {
           print('JSON Parse Error: $parseError');
@@ -491,68 +440,6 @@ NOT: Tüm öneriler kullanıcının yaş, boy, kilo özelliklerine göre kişise
       final formattedDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       return _getDefaultHealthReport(formattedDate, userProfile, weeklyActivity, healthMetrics);
     }
-  }
-  
-  // Varsayılan sağlık raporu
-  Map<String, dynamic> _getDefaultHealthReport(
-    String date, 
-    Map<String, dynamic> userProfile,
-    Map<String, dynamic> weeklyActivity,
-    Map<String, dynamic> healthMetrics
-  ) {
-    final age = userProfile['age'] ?? 25;
-    final weight = userProfile['weight'] ?? 70;
-    final height = userProfile['height'] ?? 170;
-    final bmi = _calculateBMI(weight, height);
-    
-    return {
-      "report_date": date,
-      "overall_score": 7.2,
-      "user_analysis": {
-        "age_group": _getAgeGroup(age),
-        "bmi_status": _getBMIStatus(bmi),
-        "activity_level": userProfile['activity_level'] ?? 'orta',
-        "personalized_notes": "$age yaşında, BMI $bmi değerinde sağlık durumu analizi"
-      },
-      "summary": "Bu hafta $age yaşında, BMI ${bmi.toStringAsFixed(1)} olan bir birey olarak sağlık durumunuz genel olarak iyi seviyede. Düzenli aktivite ve beslenme alışkanlıklarınızı sürdürmeniz öneriliyor.",
-      "criteria_used": [
-        "Yaş grubu: ${_getAgeGroup(age)} - metabolizma ve beslenme ihtiyaçları göz önüne alındı",
-        "BMI: ${bmi.toStringAsFixed(1)} - ${_getBMIStatus(bmi)} kategorisinde değerlendirme yapıldı",
-        "Boy-kilo oranı: ${height}cm/${weight}kg - ideal oran analizi",
-        "Aktivite seviyesi: ${userProfile['activity_level'] ?? 'orta'} - günlük kalori ihtiyacı hesaplandı"
-      ],
-      "nutrition_analysis": {
-        "daily_calorie_need": _calculateDailyCalories(userProfile),
-        "protein_need": "${_calculateProteinNeed(userProfile)}g/gün",
-        "recommended_meals": "Yaş ve BMI değerinize uygun öğün planı",
-        "hydration": "Geliştirilmeli"
-      },
-      "activity_analysis": {
-        "weekly_steps": weeklyActivity['total_steps'] ?? 35000,
-        "exercise_frequency": weeklyActivity['workout_sessions'] ?? 3,
-        "calories_burned": 2500,
-        "activity_level": "Orta-İyi"
-      },
-      "achievements": [
-        "Bu hafta ${_getAgeGroup(age)} yaş grubunuz için uygun aktivite düzeyini korudunuz",
-        "BMI değerinize (${bmi.toStringAsFixed(1)}) uygun beslenme alışkanlıkları sergiledınız",
-        "Sağlıklı yaşam hedeflerinize odaklandınız"
-      ],
-      "recommendations": [
-        _getAgeBasedRecommendation(age),
-        _getBMIBasedRecommendation(bmi),
-        "Su tüketiminizi günde ${_calculateWaterNeed(userProfile)}L'ye çıkarın",
-        "Boy-kilo oranınıza uygun porsiyon kontrolü yapın"
-      ],
-      "next_week_goals": [
-        "Yaş grubunuz için önerilen günlük ${_calculateDailySteps(age)} adım",
-        "BMI değerinizi korumak için haftada ${_getWeeklyExercise(userProfile)} egzersiz",
-        "Günlük ${_calculateWaterNeed(userProfile)}L su tüketimi",
-        "Günlük ${_calculateProteinNeed(userProfile)}g protein alımı"
-      ],
-      "risk_alerts": bmi > 30 ? ["BMI değeriniz obezite sınırında, uzman desteği önerilir"] : [],
-      "motivation_message": "$age yaşında harika bir sağlık yolculuğundasınız! BMI değeriniz (${bmi.toStringAsFixed(1)}) ve fiziksel özellikleriniz dikkate alınarak hazırlanan bu önerilerle hedeflerinize ulaşacaksınız. Tutarlı bir ilerleme gösteriyorsunuz!"
-    };
   }
 
   // Kişiselleştirilmiş sağlık önerisi alma
@@ -622,97 +509,6 @@ ZORUNLU: Tam 5 adet kişiselleştirilmiş, uygulanabilir öneri ver. JSON format
     } catch (e) {
       print('Gemini Health Tips Error: $e');
       return _getDefaultHealthTips(focusArea);
-    }
-  }
-  
-  // Varsayılan sağlık önerileri
-  List<String> _getDefaultHealthTips(String focusArea) {
-    switch (focusArea) {
-      case 'nutrition':
-        return [
-          'Günde en az 5 porsiyon sebze ve meyve tüketin',
-          'Öğünlerde protein kaynağını mutlaka bulundurun',
-          'İşlenmiş gıdaları sınırlayın, doğal besinleri tercih edin',
-          'Günde 2-3 litre su için',
-          'Öğün aralarında sağlıklı atıştırmalıklar tercih edin'
-        ];
-      case 'fitness':
-        return [
-          'Haftada en az 150 dakika orta yoğunlukta egzersiz yapın',
-          'Günlük 8000-10000 adım hedefleyin',
-          'Kuvvet antrenmanlarını haftada 2-3 kez ekleyin',
-          'Egzersiz öncesi ve sonrası ısınma-soğuma yapın',
-          'Aktivitenizi kademeli olarak artırın'
-        ];
-      case 'sleep':
-        return [
-          'Her gün aynı saatlerde uyuyup kalkın',
-          'Yatmadan 2 saat önce elektronik cihazları kapatın',
-          'Yatak odanızı serin, karanlık ve sessiz tutun',
-          'Kafein alımını öğleden sonra sınırlayın',
-          'Rahatlatıcı uyku rutini oluşturun'
-        ];
-      case 'mental':
-        return [
-          'Günde 10-15 dakika meditasyon veya nefes egzersizi yapın',
-          'Sosyal bağlantılarınızı güçlendirin',
-          'Günlük yaşamınızda minnettar olduğunuz şeyleri not edin',
-          'Stresi azaltmak için hobiler edinin',
-          'Gerektiğinde profesyonel destek almaktan çekinmeyin'
-        ];
-      default:
-        return [
-          'Dengeli beslenmeye dikkat edin',
-          'Düzenli fiziksel aktivite yapın',
-          'Kaliteli uyku alın',
-          'Stress yönetimi teknikleri uygulayın',
-          'Düzenli sağlık kontrollerini ihmal etmeyin'
-        ];
-    }
-  }
-
-  // Sağlık skoru hesaplama
-  Future<double> calculateHealthScore({
-    required Map<String, dynamic> nutritionData,
-    required Map<String, dynamic> activityData,
-    required Map<String, dynamic> vitalData,
-  }) async {
-    try {
-      final prompt = '''
-Aşağıdaki verilere dayanarak 1-10 arası sağlık skoru hesapla:
-
-Beslenme Verileri: ${nutritionData.toString()}
-Aktivite Verileri: ${activityData.toString()}
-Vital Veriler: ${vitalData.toString()}
-
-JSON formatında döndür:
-{
-  "health_score": 8.5,
-  "explanation": "Skor hesaplama açıklaması"
-}
-''';
-
-      final response = await _model.generateContent([Content.text(prompt)]);
-      
-      if (response.text != null) {
-        try {
-          String cleanedResponse = response.text!
-              .replaceAll('```json', '')
-              .replaceAll('```', '')
-              .trim();
-          
-          final Map<String, dynamic> jsonResponse = jsonDecode(cleanedResponse);
-          return (jsonResponse['health_score'] as num).toDouble();
-        } catch (parseError) {
-          print('JSON Parse Error: $parseError');
-          return 0.0;
-        }
-      }
-      
-      return 0.0;
-    } catch (e) {
-      print('Gemini Health Score Error: $e');
-      return 0.0;
     }
   }
 
@@ -852,5 +648,91 @@ JSON formatında döndür:
     }
 
     return double.parse(baseWater.toStringAsFixed(1));
+  }
+
+  // Varsayılan sağlık raporu
+  Map<String, dynamic> _getDefaultHealthReport(
+    String date, 
+    Map<String, dynamic> userProfile,
+    Map<String, dynamic> weeklyActivity,
+    Map<String, dynamic> healthMetrics
+  ) {
+    final age = userProfile['age'] ?? 25;
+    final weight = userProfile['weight'] ?? 70;
+    final height = userProfile['height'] ?? 170;
+    final bmi = _calculateBMI(weight, height);
+    
+    return {
+      "report_date": date,
+      "overall_score": 7.2,
+      "user_analysis": {
+        "age_group": _getAgeGroup(age),
+        "bmi_status": _getBMIStatus(bmi),
+        "activity_level": userProfile['activity_level'] ?? 'orta',
+        "personalized_notes": "$age yaşında, BMI $bmi değerinde sağlık durumu analizi"
+      },
+      "summary": "Bu hafta $age yaşında, BMI ${bmi.toStringAsFixed(1)} olan bir birey olarak sağlık durumunuz genel olarak iyi seviyede.",
+      "achievements": [
+        "Bu hafta ${_getAgeGroup(age)} yaş grubunuz için uygun aktivite düzeyini korudunuz",
+        "BMI değerinize (${bmi.toStringAsFixed(1)}) uygun beslenme alışkanlıkları sergiledınız"
+      ],
+      "recommendations": [
+        _getAgeBasedRecommendation(age),
+        _getBMIBasedRecommendation(bmi),
+        "Su tüketiminizi günde ${_calculateWaterNeed(userProfile)}L'ye çıkarın"
+      ],
+      "next_week_goals": [
+        "Yaş grubunuz için önerilen günlük ${_calculateDailySteps(age)} adım",
+        "BMI değerinizi korumak için haftada ${_getWeeklyExercise(userProfile)} egzersiz",
+        "Günlük ${_calculateWaterNeed(userProfile)}L su tüketimi"
+      ],
+      "motivation_message": "$age yaşında harika bir sağlık yolculuğundasınız! BMI değeriniz (${bmi.toStringAsFixed(1)}) dikkate alınarak hazırlanan bu önerilerle hedeflerinize ulaşacaksınız."
+    };
+  }
+  
+  // Varsayılan sağlık önerileri
+  List<String> _getDefaultHealthTips(String focusArea) {
+    switch (focusArea) {
+      case 'nutrition':
+        return [
+          'Günde en az 5 porsiyon sebze ve meyve tüketin',
+          'Öğünlerde protein kaynağını mutlaka bulundurun',
+          'İşlenmiş gıdaları sınırlayın, doğal besinleri tercih edin',
+          'Günde 2-3 litre su için',
+          'Öğün aralarında sağlıklı atıştırmalıklar tercih edin'
+        ];
+      case 'fitness':
+        return [
+          'Haftada en az 150 dakika orta yoğunlukta egzersiz yapın',
+          'Günlük 8000-10000 adım hedefleyin',
+          'Kuvvet antrenmanlarını haftada 2-3 kez ekleyin',
+          'Egzersiz öncesi ve sonrası ısınma-soğuma yapın',
+          'Aktivitenizi kademeli olarak artırın'
+        ];
+      case 'sleep':
+        return [
+          'Her gün aynı saatlerde uyuyup kalkın',
+          'Yatmadan 2 saat önce elektronik cihazları kapatın',
+          'Yatak odanızı serin, karanlık ve sessiz tutun',
+          'Kafein alımını öğleden sonra sınırlayın',
+          'Rahatlatıcı uyku rutini oluşturun'
+        ];
+      case 'mental':
+        return [
+          'Günde 10-15 dakika meditasyon veya nefes egzersizi yapın',
+          'Sosyal bağlantılarınızı güçlendirin',
+          'Günlük yaşamınızda minnettar olduğunuz şeyleri not edin',
+          'Stresi azaltmak için hobiler edinin',
+          'Gerektiğinde profesyonel destek almaktan çekinmeyin'
+        ];
+      default:
+        return [
+          'Dengeli beslenmeye dikkat edin',
+          'Düzenli fiziksel aktivite yapın',
+          'Kaliteli uyku alın',
+          'Stress yönetimi teknikleri uygulayın',
+          'Düzenli sağlık kontrollerini ihmal etmeyin'
+        ];
+    }
   }
 }

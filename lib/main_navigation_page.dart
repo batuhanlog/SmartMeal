@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'food_photo_page.dart';
+import 'smart_food_analysis_page.dart';
 import 'ai_nutrition_advisor_page.dart';
 import 'profile_page.dart';
 
@@ -16,7 +16,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   
   final List<Widget> _pages = [
     const HomePage(),
-    const FoodPhotoPage(),
+    const SmartFoodAnalysisPage(),
     const AINutritionAdvisorPage(),
     const ProfilePage(),
   ];
@@ -49,8 +49,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   color: const Color(0xFF2E7D32),
                 ),
                 _buildNavItem(
-                  icon: Icons.camera_alt_rounded,
-                  label: 'Fotoğraf Çek',
+                  icon: Icons.analytics_rounded,
+                  label: 'Yemek Analizi',
                   index: 1,
                   color: const Color(0xFFD32F2F),
                 ),

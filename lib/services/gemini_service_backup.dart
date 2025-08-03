@@ -4,7 +4,7 @@ import 'dart:convert';
 
 class GeminiService {
   // Gemini API anahtarı
-  static const String _apiKey = 'AIzaSyBEH_GZMDh1XvPQUfxbwhYh76g_YaZ-LAU';
+  static const String _apiKey = 'AIzaSyBIJkKmiCZjlcKTIfsI25gs0NLxPhG94Fs';
   
   late final GenerativeModel _model;
   late final GenerativeModel _visionModel;
@@ -89,6 +89,15 @@ JSON formatında döndür (sadece JSON, başka açıklama yok):
   // Yemek fotoğrafı analizi
   Future<Map<String, dynamic>> analyzeFoodPhoto(Uint8List imageBytes) async {
     try {
+      // Dosya boyutu kontrolü
+      if (imageBytes.isEmpty) {
+        throw Exception('Görsel dosyası boş');
+      }
+      
+      if (imageBytes.length > 10 * 1024 * 1024) { // 10MB limit
+        throw Exception('Görsel dosyası çok büyük (max 10MB)');
+      }
+      
       final now = DateTime.now();
       final formattedDate = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       
@@ -97,23 +106,23 @@ Bu fotoğrafı analiz et ve şu adımları takip et:
 
 1. ÖNCE: Fotoğrafta yemek, içecek veya herhangi bir besin maddesi var mı kontrol et
 2. EĞER yemek/besin YOKSA: "is_food": false döndür
-3. EĞER yemek/besin VARSA: Detaylı analiz yap ve tarihi bilgiler ver
+3. EĞER yemek/besin VARSA: Detaylı analiz yap
 
 YEMEK VARSA YAPILACAKLAR:
-- Fotoğrafta gördüklerini spesifik olarak tanımla
-- Yemeğin tarihsel kökenini ve kültürel önemini anlat
-- Bu yemeğin hangi ülke/bölge mutfağından geldiğini açıkla
-- Tarihte bu yemeğin nasıl ortaya çıktığını anlat
-- Geleneksel yapılış şeklini ve modern varyasyonlarını açıkla
+- Fotoğrafta gördüklerini tanımla (Eğer tam olarak ne olduğunu bilmiyorsan, görsel özelliklerini tanımla)
+- Örnek: "kırmızı soslu makarna", "tavuklu pirinç", "yeşil salata", "çikolatalı tatlı"
+- Asla "bilinmeyen", "analiz edilen yemek" gibi genel ifadeler kullanma
+- Gördüklerini spesifik olarak tanımla
+- Yemeğin tarihçesi ve kökeni hakkında kısa bilgi ver
 
 YEMEK YOKSA:
 - Sadece is_food: false döndür
 
-JSON formatında döndür:
+MUTLAKA JSON formatında döndür (sadece JSON, başka açıklama yok):
 {
   "is_food": true/false,
-  "food_name": "Gördüğün yemeğin spesifik adı",
-  "emoji": "uygun emoji",
+  "food_name": "Gördüğün yemeğin/besinin spesifik tanımı",
+  "emoji": "🍽️",
   "confidence": 75,
   "calories": 320,
   "protein": 25,
@@ -123,20 +132,18 @@ JSON formatında döndür:
   "sodium": 450,
   "sugar": 5,
   "health_score": 7,
-  "recipe": "Bu yemeğin geleneksel yapılış tarifi",
-  "analysis": "Görsel analizi ve besin değerleri açıklaması",
-  "historical_info": "Bu yemeğin tarihi, kökeni, kültürel önemi ve hikayesi. Hangi dönemde ortaya çıktığı, hangi kültürden geldiği, nasıl yayıldığı gibi detaylı bilgiler",
-  "cultural_significance": "Bu yemeğin kültürel önemi ve farklı kültürlerdeki varyasyonları",
-  "traditional_preparation": "Geleneksel yapılış yöntemi ve modern zamanlarda nasıl değiştiği",
+  "recipe": "Bu yemeğin muhtemel yapılış tarifi",
+  "analysis": "Gördüklerinin detaylı açıklaması ve besin değeri analizi",
+  "food_history": "Bu yemeğin tarihçesi, kökeni ve kültürel önemi hakkında ilginç bilgiler",
   "suggestions": ["beslenme önerisi 1", "öneri 2", "öneri 3"],
   "analysis_date": "$formattedDate"
 }
 
 ÖRNEKLER:
-- Makarna: İtalyan kökenli, Marco Polo efsanesi, modern varyasyonları
-- Pilav: Orta Asya kökenli, Türk mutfağında gelişimi
-- Hummus: Orta Doğu kökenli, antik çağlardan beri tüketimi
-- Sushi: Japon kökenli, fermantasyondan modern forma evrimi
+- Makarna görüyorsan: "Kırmızı soslu spagetti" veya "Beyaz soslu penne"
+- Salata görüyorsan: "Karışık yeşil salata" veya "Domates salatası"
+- Tatlı görüyorsan: "Çikolatalı pasta" veya "Meyve tart"
+- Et görüyorsan: "Izgara tavuk" veya "Köfte"
 ''';
 
       final content = [
@@ -146,17 +153,37 @@ JSON formatında döndür:
         ])
       ];
 
+      print('Gemini API\'ye istek gönderiliyor...');
       final response = await _visionModel.generateContent(content);
+      print('Gemini API yanıtı alındı: ${response.text?.substring(0, 100)}...');
       
-      if (response.text != null) {
-        try {
-          // JSON'u temizle ve parse et
-          String cleanedResponse = response.text!
-              .replaceAll('```json', '')
-              .replaceAll('```', '')
-              .trim();
-          
-          final Map<String, dynamic> jsonResponse = jsonDecode(cleanedResponse);
+      if (response.text == null || response.text!.isEmpty) {
+        throw Exception('Gemini API\'den boş yanıt alındı');
+      }
+
+      try {
+        // JSON'u temizle ve parse et
+        String cleanedResponse = response.text!
+            .replaceAll('```json', '')
+            .replaceAll('```', '')
+            .replaceAll('`', '')
+            .trim();
+        
+        // JSON başlangıcını bul
+        int jsonStart = cleanedResponse.indexOf('{');
+        if (jsonStart != -1) {
+          cleanedResponse = cleanedResponse.substring(jsonStart);
+        }
+        
+        // JSON sonunu bul
+        int jsonEnd = cleanedResponse.lastIndexOf('}');
+        if (jsonEnd != -1) {
+          cleanedResponse = cleanedResponse.substring(0, jsonEnd + 1);
+        }
+        
+        print('Temizlenmiş JSON: $cleanedResponse');
+        
+        final Map<String, dynamic> jsonResponse = jsonDecode(cleanedResponse);
           
           // Eğer yemek değilse özel mesaj döndür
           if (jsonResponse['is_food'] == false) {
@@ -174,9 +201,7 @@ JSON formatında döndür:
               'health_score': 0,
               'recipe': 'Bu görsel herhangi bir yemek içermiyor. Lütfen yemek görseli atın.',
               'analysis': 'Fotoğrafta yemek veya besin maddesi tespit edilemedi.',
-              'historical_info': 'Analiz edilecek yemek bulunamadı.',
-              'cultural_significance': 'Analiz edilecek yemek bulunamadı.',
-              'traditional_preparation': 'Analiz edilecek yemek bulunamadı.',
+              'food_history': 'Yemek tespit edilemediği için tarihçe bilgisi sağlanamıyor.',
               'suggestions': ['Yemek fotoğrafı çekin', 'Daha net bir görsel kullanın', 'Farklı açıdan fotoğraf çekin'],
               'analysis_date': formattedDate,
               'error_type': 'not_food'
@@ -195,9 +220,7 @@ JSON formatında döndür:
           jsonResponse['fat'] = jsonResponse['fat'] ?? 10;
           jsonResponse['recipe'] = jsonResponse['recipe'] ?? 'Tarif bilgisi mevcut değil.';
           jsonResponse['analysis'] = jsonResponse['analysis'] ?? 'Beslenme analizi yapıldı.';
-          jsonResponse['historical_info'] = jsonResponse['historical_info'] ?? 'Tarihi bilgi mevcut değil.';
-          jsonResponse['cultural_significance'] = jsonResponse['cultural_significance'] ?? 'Kültürel bilgi mevcut değil.';
-          jsonResponse['traditional_preparation'] = jsonResponse['traditional_preparation'] ?? 'Geleneksel tarif bilgisi mevcut değil.';
+          jsonResponse['food_history'] = jsonResponse['food_history'] ?? 'Bu yemek hakkında tarihçe bilgisi mevcut değil.';
           jsonResponse['suggestions'] = jsonResponse['suggestions'] ?? ['Dengeli beslenmeye dikkat edin', 'Su tüketiminizi artırın'];
           
           return jsonResponse;
@@ -220,14 +243,11 @@ JSON formatında döndür:
             'health_score': 6,
             'recipe': 'Bu yemek için detaylı tarif bilgisi mevcut değil.',
             'analysis': 'Fotoğraf üzerinden beslenme analizi yapıldı.',
-            'historical_info': 'Analiz hatası nedeniyle tarihi bilgi alınamadı.',
-            'cultural_significance': 'Analiz hatası nedeniyle kültürel bilgi alınamadı.',
-            'traditional_preparation': 'Analiz hatası nedeniyle geleneksel tarif bilgisi alınamadı.',
+            'food_history': 'Tarihçe bilgisi analiz edilemedi.',
             'suggestions': ['Dengeli beslenmeye dikkat edin', 'Porsiyon kontrolü yapın', 'Su tüketiminizi artırın'],
             'analysis_date': formattedDate,
           };
         }
-      }
       
       // Response yoksa varsayılan değerler döndür
       return {
@@ -244,9 +264,7 @@ JSON formatında döndür:
         'health_score': 5,
         'recipe': 'Fotoğraf analiz edilemedi.',
         'analysis': 'Görsel analiz tamamlanamadı.',
-        'historical_info': 'Fotoğraf analiz edilemediği için tarihi bilgi mevcut değil.',
-        'cultural_significance': 'Fotoğraf analiz edilemediği için kültürel bilgi mevcut değil.',
-        'traditional_preparation': 'Fotoğraf analiz edilemediği için geleneksel tarif bilgisi mevcut değil.',
+        'food_history': 'Analiz başarısız olduğu için tarihçe bilgisi alınamadı.',
         'suggestions': ['Daha net bir fotoğraf çekin', 'Beslenme uzmanına danışın'],
         'analysis_date': formattedDate,
       };
@@ -271,9 +289,7 @@ JSON formatında döndür:
         'health_score': 4,
         'recipe': 'Analiz sırasında hata oluştu.',
         'analysis': 'Teknik bir sorun nedeniyle analiz tamamlanamadı.',
-        'historical_info': 'Bağlantı hatası nedeniyle tarihi bilgi alınamadı.',
-        'cultural_significance': 'Bağlantı hatası nedeniyle kültürel bilgi alınamadı.',
-        'traditional_preparation': 'Bağlantı hatası nedeniyle geleneksel tarif bilgisi alınamadı.',
+        'food_history': 'Hata nedeniyle tarihçe bilgisi alınamadı.',
         'suggestions': ['Tekrar deneyin', 'İnternet bağlantınızı kontrol edin'],
         'analysis_date': formattedDate,
       };
