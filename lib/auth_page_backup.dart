@@ -13,18 +13,16 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
-  // Modern Yeşil Minimalist Tema
-  static const Color _primaryColor = Color(0xFF2E7D32);
-  static const Color _secondaryColor = Color(0xFF4CAF50);
-  static const Color _accentColor = Color(0xFF66BB6A);
-  static const Color _lightGreen = Color(0xFFE8F5E8);
-  static const Color _darkGreen = Color(0xFF1B5E20);
-  static const Color _errorColor = Color(0xFFE53935);
-  static const Color _successColor = Color(0xFF43A047);
-  static const Color _backgroundColor = Color(0xFFFAFDFA);
+  // Modern Renkli Tema
+  static const Color _primaryColor = Color(0xFF667EEA);
+  static const Color _secondaryColor = Color(0xFF764BA2);
+  static const Color _accentColor = Color(0xFF4CAF50);
+  static const Color _errorColor = Color(0xFFE74C3C);
+  static const Color _successColor = Color(0xFF27AE60);
+  static const Color _backgroundColor = Color(0xFFF5F7FA);
   static const Color _cardColor = Colors.white;
-  static const Color _textColor = Color(0xFF1A1A1A);
-  static const Color _subtleTextColor = Color(0xFF6A6A6A);
+  static const Color _textColor = Color(0xFF2C3E50);
+  static const Color _subtleTextColor = Color(0xFF7F8C8D);
 
   bool isLogin = true;
   bool isLoading = false;
@@ -166,19 +164,11 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
-        title: Text(
-          isLogin ? 'Giriş' : 'Kayıt',
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        foregroundColor: _primaryColor,
+        title: Text(isLogin ? '🔐 Giriş Yap' : '🌟 Hesap Oluştur'),
+        backgroundColor: _primaryColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        surfaceTintColor: Colors.transparent,
       ),
       body: isLogin ? _buildLoginForm() : _buildSignupForm(),
     );
@@ -187,213 +177,96 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   Widget _buildLoginForm() {
     return Form(
       key: _formKey,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40),
-            
-            // Minimalist Logo ve Başlık
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: _lightGreen,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.eco,
-                size: 48,
-                color: _primaryColor,
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            Text(
-              'SmartMeal',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w300,
-                color: _primaryColor,
-                letterSpacing: 1.2,
-              ),
-            ),
-            
-            const SizedBox(height: 8),
-            
-            Text(
-              'Akıllı beslenme asistanınız',
-              style: TextStyle(
-                fontSize: 16,
-                color: _subtleTextColor,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            
-            const SizedBox(height: 60),
-            
-            // Minimalist Form Alanları
-            _buildMinimalistTextField(
-              controller: _emailController,
-              label: 'E-posta',
-              keyboardType: TextInputType.emailAddress,
-              validator: (val) => val!.isEmpty ? 'E-posta girin' : null,
-            ),
-            
-            const SizedBox(height: 24),
-            
-            _buildMinimalistTextField(
-              controller: _passwordController,
-              label: 'Şifre',
-              obscureText: true,
-              validator: (val) => val!.length < 6 ? 'En az 6 karakter' : null,
-            ),
-            
-            const SizedBox(height: 40),
-            
-            // Minimalist Giriş Butonu
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(
-                        'Giriş Yap',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-            
-            // Minimalist Ayırıcı
-            Row(
+      child: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            child: Column(
               children: [
-                Expanded(
-                  child: Container(
-                    height: 1,
-                    color: Colors.grey.shade200,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'veya',
-                    style: TextStyle(
-                      color: _subtleTextColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    height: 1,
-                    color: Colors.grey.shade200,
-                  ),
-                ),
+                const Icon(Icons.restaurant_menu, size: 80, color: _primaryColor),
+                const SizedBox(height: 16),
+                const Text('Smeal\'e Hoş Geldiniz', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: _primaryColor)),
+                const SizedBox(height: 8),
+                const Text('Sağlıklı beslenme yolculuğunuz başlasın!', style: TextStyle(fontSize: 16, color: _subtleTextColor), textAlign: TextAlign.center),
               ],
             ),
-            
-            const SizedBox(height: 32),
-            
-            // Minimalist Google Butonu
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: OutlinedButton(
-                onPressed: isLoading ? null : _signInWithGoogle,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey.shade200, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+          ),
+          
+          const SizedBox(height: 32),
+          
+          _buildModernTextField(
+            controller: _emailController, icon: Icons.email, label: 'E-posta', keyboardType: TextInputType.emailAddress,
+            validator: (val) => val!.isEmpty ? 'E-posta girin' : null,
+          ),
+          
+          const SizedBox(height: 16),
+          
+          _buildModernTextField(
+            controller: _passwordController, icon: Icons.lock, label: 'Şifre', obscureText: true,
+            validator: (val) => val!.length < 6 ? 'En az 6 karakter' : null,
+          ),
+          
+          const SizedBox(height: 32),
+          
+          ElevatedButton(
+            // *** DÜZELTME: Fonksiyon çağrısı eski haline getirildi ***
+            onPressed: _submit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 2,
+            ),
+            child: const Text('Giriş Yap', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          Row(
+            children: [
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text('veya', style: TextStyle(color: _subtleTextColor)),
+              ),
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+            ],
+          ),
+          
+          const SizedBox(height: 24),
+          
+          OutlinedButton.icon(
+            onPressed: _signInWithGoogle,
+            icon: Image.asset('assets/images/google_logo.png', height: 22, width: 22),
+            label: const Text('Google ile Devam Et', style: TextStyle(color: _textColor, fontSize: 16, fontWeight: FontWeight.w600)),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 52),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              side: BorderSide(color: Colors.grey.shade300),
+              backgroundColor: Colors.white,
+            ),
+          ),
+          
+          const SizedBox(height: 32),
+          
+          TextButton(
+            onPressed: () => setState(() => isLogin = false),
+            child: RichText(
+              text: TextSpan( // *** DÜZELTME: const kaldırıldı ***
+                text: 'Hesabın yok mu? ',
+                style: const TextStyle(color: _subtleTextColor, fontSize: 16, fontFamily: 'System'),
+                children: const [
+                  TextSpan(
+                    text: 'Kayıt Ol',
+                    style: TextStyle(color: _primaryColor, fontWeight: FontWeight.bold),
                   ),
-                  backgroundColor: Colors.white,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'G',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Google ile devam et',
-                      style: TextStyle(
-                        color: _textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
-            
-            const SizedBox(height: 40),
-            
-            // Minimalist Kayıt Linki
-            TextButton(
-              onPressed: () => setState(() => isLogin = false),
-              child: RichText(
-                text: TextSpan(
-                  text: 'Hesabınız yok mu? ',
-                  style: TextStyle(
-                    color: _subtleTextColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: 'Kayıt olun',
-                      style: TextStyle(
-                        color: _primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -590,58 +463,6 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
             ...children,
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildMinimalistTextField({
-    required TextEditingController controller,
-    required String label,
-    TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      validator: validator,
-      style: TextStyle(
-        fontSize: 16,
-        color: _textColor,
-        fontWeight: FontWeight.w400,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
-          color: _subtleTextColor,
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: _primaryColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: _errorColor, width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: _errorColor, width: 2),
-        ),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        floatingLabelBehavior: FloatingLabelBehavior.never,
       ),
     );
   }
