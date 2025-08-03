@@ -1,8 +1,12 @@
 ![LOGO](https://github.com/user-attachments/assets/c72d0ed3-8d75-486a-89b0-bd855c03c557)
 
 # Uygulamaya Giriş Bilgileri 
+
 kullanıcı e mail : test@hotmail.com
+
 Şifre: test123
+
+ [APK Drive Klasörüne Buradan Ulaşabilirsiniz](https://drive.google.com/drive/u/0/folders/1vEuc8-K1f96nQlNGwpa8vkpKmopB1cKP)
 
 # Takım Bilgileri 
 
