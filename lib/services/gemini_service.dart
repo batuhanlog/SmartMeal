@@ -280,6 +280,81 @@ JSON formatında döndür:
     }
   }
 
+  // Sağlık durumu analizi
+  Future<Map<String, dynamic>> analyzeHealthCondition({
+    required Map<String, dynamic> responses,
+    required Map<String, dynamic> userProfile,
+  }) async {
+    try {
+      final prompt = '''
+Bir sağlık uzmanı olarak, aşağıdaki anket cevaplarını ve kişi bilgilerini analiz ederek kapsamlı bir sağlık değerlendirmesi yap:
+
+Kişi Bilgileri:
+- Yaş: ${userProfile['age'] ?? 'Belirtilmemiş'}
+- Cinsiyet: ${userProfile['gender'] ?? 'Belirtilmemiş'}
+- Kilo: ${userProfile['weight'] ?? 'Belirtilmemiş'} kg
+- Boy: ${userProfile['height'] ?? 'Belirtilmemiş'} cm
+- Aktivite Seviyesi: ${userProfile['activityLevel'] ?? 'Belirtilmemiş'}
+
+Anket Cevapları:
+${responses.entries.map((e) => '- ${e.key}: ${e.value}').join('\n')}
+
+ÖNEMLİ: Bu sadece bir ön değerlendirmedir, kesin tanı için mutlaka sağlık uzmanına başvurulmalıdır.
+
+JSON formatında döndür (sadece JSON, başka açıklama yok):
+{
+  "overall_risk_level": "Düşük/Orta/Yüksek",
+  "risk_percentage": 25,
+  "main_concerns": ["Endişe alanı 1", "Endişe alanı 2"],
+  "risk_factors": ["Risk faktörü 1", "Risk faktörü 2"],
+  "recommendations": ["Öneri 1", "Öneri 2", "Öneri 3"],
+  "lifestyle_suggestions": ["Yaşam tarzı önerisi 1", "Yaşam tarzı önerisi 2"],
+  "when_to_see_doctor": "Hangi durumlarda doktora başvurulması gerektiği",
+  "follow_up_period": "2-3 ay",
+  "positive_aspects": ["Olumlu yön 1", "Olumlu yön 2"],
+  "detailed_analysis": "Detaylı analiz metni (2-3 paragraf)"
+}
+''';
+
+      final response = await _model.generateContent([Content.text(prompt)]);
+      
+      if (response.text != null) {
+        try {
+          String cleanedResponse = response.text!
+              .replaceAll('```json', '')
+              .replaceAll('```', '')
+              .trim();
+          
+          final Map<String, dynamic> jsonResponse = jsonDecode(cleanedResponse);
+          return jsonResponse;
+        } catch (parseError) {
+          print('JSON Parse Error: $parseError');
+          return _getDefaultHealthAnalysis();
+        }
+      }
+      
+      return _getDefaultHealthAnalysis();
+    } catch (e) {
+      print('Gemini Health Analysis Error: $e');
+      return _getDefaultHealthAnalysis();
+    }
+  }
+
+  Map<String, dynamic> _getDefaultHealthAnalysis() {
+    return {
+      "overall_risk_level": "Orta",
+      "risk_percentage": 30,
+      "main_concerns": ["Genel sağlık kontrolü gerekli", "Yaşam tarzı iyileştirmeleri"],
+      "risk_factors": ["Yaş faktörü", "Yaşam tarzı faktörleri"],
+      "recommendations": ["Düzenli egzersiz yapın", "Dengeli beslenin", "Stresi azaltın"],
+      "lifestyle_suggestions": ["Günlük 30 dakika yürüyüş", "8 saat uyku"],
+      "when_to_see_doctor": "Herhangi bir belirtiniz varsa hemen doktora başvurun",
+      "follow_up_period": "3 ay",
+      "positive_aspects": ["Sağlığınıza dikkat ediyorsunuz", "Önleyici yaklaşım sergiliyorsunuz"],
+      "detailed_analysis": "Analiz tamamlanamadı. Lütfen bir sağlık uzmanından yardım alın."
+    };
+  }
+
   // Malzeme bazlı tarif önerisi
   Future<List<Map<String, dynamic>>> getRecipesByIngredients(List<String> ingredients) async {
     try {
