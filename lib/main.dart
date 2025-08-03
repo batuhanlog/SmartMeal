@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'splash_screen.dart';
+import 'auth_wrapper.dart';
 
 // EKLENDİ: Firebase'i başlatmak için gerekli kütüphaneler
 import 'package:firebase_core/firebase_core.dart';
@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
-      home: const SplashScreen(),
+      home: const AuthWrapper(),
     );
   }
 }

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class CalorieCalculatorService {
   static const Map<String, double> _activityMultipliers = {
     'sedentary': 1.2,
@@ -132,5 +130,54 @@ class CalorieCalculatorService {
       'carbs': totalCalories * carbRatio / 4, // 1g karbonhidrat = 4 kalori
       'fat': totalCalories * fatRatio / 9, // 1g yağ = 9 kalori
     };
+  }
+
+  // Eksik methodlar - quick_calorie_widget.dart için
+  static double calculateCaloriesFromFoodList(List<String> foods) {
+    // Basit bir hesaplama - gerçek uygulamada daha detaylı olmalı
+    double totalCalories = 0;
+    
+    final Map<String, double> foodCalories = {
+      'elma': 52,
+      'muz': 89,
+      'ekmek': 265,
+      'peynir': 113,
+      'yumurta': 155,
+      'tavuk': 165,
+      'pirinç': 130,
+      'makarna': 131,
+      'salata': 15,
+      'domates': 18,
+      'patates': 77,
+    };
+    
+    for (String food in foods) {
+      String lowerFood = food.toLowerCase().trim();
+      // Basit kelime eşleştirmesi
+      for (String key in foodCalories.keys) {
+        if (lowerFood.contains(key)) {
+          totalCalories += foodCalories[key] ?? 0;
+          break;
+        }
+      }
+    }
+    
+    return totalCalories;
+  }
+
+  static double calculateDailyCalorieNeeds({
+    required double weight,
+    required double height,
+    required int age,
+    required String gender,
+    String activityLevel = 'moderate',
+  }) {
+    return calculateDailyCalories(
+      weight: weight,
+      height: height,
+      age: age,
+      gender: gender,
+      activityLevel: activityLevel,
+    );
   }
 }

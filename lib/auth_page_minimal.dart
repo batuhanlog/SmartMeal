@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'home_page.dart';
 import 'services/google_sign_in_service.dart';
 import 'services/error_handler.dart';
 
@@ -11,14 +12,12 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
-  // Sade Modern Tema
-  static const Color _primaryColor = Color(0xFF1F2937); // Koyu gri
-  static const Color _accentColor = Color(0xFF10B981); // Minimal yeşil vurgu
-  static const Color _backgroundColor = Color(0xFFFAFAFA); // Çok açık gri
+  // Minimal Modern Tema
+  static const Color _primaryColor = Color(0xFF6366F1);
+  static const Color _backgroundColor = Colors.white;
   static const Color _textColor = Color(0xFF1F2937);
-  static const Color _subtleTextColor = Color(0xFF9CA3AF);
+  static const Color _subtleTextColor = Color(0xFF6B7280);
   static const Color _borderColor = Color(0xFFE5E7EB);
-  static const Color _cardColor = Colors.white;
 
   late TabController _tabController;
   bool isLoading = false;
@@ -87,7 +86,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       
       if (userCredential != null && mounted) {
         ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
-        // Auth wrapper otomatik olarak yönlendirecek, manuel navigation gerekmez
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -114,7 +116,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
 
       if (mounted) {
         ErrorHandler.showSuccess(context, 'Başarıyla giriş yapıldı!');
-        // Auth wrapper otomatik olarak yönlendirecek, manuel navigation gerekmez
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -141,7 +146,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
 
       if (mounted) {
         ErrorHandler.showSuccess(context, 'Hesap başarıyla oluşturuldu!');
-        // Auth wrapper otomatik olarak yönlendirecek, manuel navigation gerekmez
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -167,39 +175,26 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               padding: const EdgeInsets.all(32),
               child: Column(
                 children: [
-                  // Logo Container
                   Container(
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: _cardColor,
+                      color: _primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        'assets/images/icon.png',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.contain,
-                      ),
+                    child: Icon(
+                      Icons.restaurant_menu,
+                      size: 40,
+                      color: _primaryColor,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'SmartMeal',
                     style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1F2937),
-                      letterSpacing: -1,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: _textColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -208,32 +203,6 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                     style: TextStyle(
                       fontSize: 16,
                       color: _subtleTextColor,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Beta Premium Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _accentColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: _accentColor.withOpacity(0.3), width: 1),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star_rounded, color: _accentColor, size: 18),
-                        const SizedBox(width: 6),
-                        Text(
-                          'BETA - Tüm Premium Özellikler Ücretsiz',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _accentColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ],
@@ -244,9 +213,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 24),
               decoration: BoxDecoration(
-                color: _backgroundColor,
+                color: const Color(0xFFF9FAFB),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _borderColor, width: 1),
               ),
               child: TabBar(
                 controller: _tabController,
@@ -257,8 +225,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                 indicatorSize: TabBarIndicatorSize.tab,
                 labelColor: Colors.white,
                 unselectedLabelColor: _subtleTextColor,
-                labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                labelStyle: const TextStyle(fontWeight: FontWeight.w600),
                 tabs: const [
                   Tab(text: 'Giriş Yap'),
                   Tab(text: 'Kayıt Ol'),
@@ -470,26 +437,21 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: _subtleTextColor, fontWeight: FontWeight.w400),
-        prefixIcon: Icon(icon, color: _subtleTextColor, size: 20),
+        prefixIcon: Icon(icon, color: _subtleTextColor),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: _borderColor, width: 1),
+          borderSide: BorderSide(color: _borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: _borderColor, width: 1),
+          borderSide: BorderSide(color: _borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: _primaryColor, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
         filled: true,
-        fillColor: _cardColor,
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
@@ -500,28 +462,22 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       value: gender,
       decoration: InputDecoration(
         labelText: 'Cinsiyet',
-        labelStyle: TextStyle(color: _subtleTextColor, fontWeight: FontWeight.w400),
-        prefixIcon: Icon(Icons.people_outline, color: _subtleTextColor, size: 20),
+        prefixIcon: Icon(Icons.people_outline, color: _subtleTextColor),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: _borderColor, width: 1),
+          borderSide: BorderSide(color: _borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: _borderColor, width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: _primaryColor, width: 2),
+          borderSide: BorderSide(color: _borderColor),
         ),
         filled: true,
-        fillColor: _cardColor,
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
-      items: [
-        DropdownMenuItem(value: 'Erkek', child: Text('Erkek')),
-        DropdownMenuItem(value: 'Kadın', child: Text('Kadın')),
-      ],
+      items: ['Erkek', 'Kadın'].map((g) => 
+        DropdownMenuItem(value: g, child: Text(g))
+      ).toList(),
       onChanged: (val) => setState(() => gender = val ?? 'Erkek'),
     );
   }
@@ -532,7 +488,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 18,
           fontWeight: FontWeight.w600,
           color: _textColor,
         ),
@@ -623,7 +579,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   Widget _buildPrimaryButton({required String text, required VoidCallback? onPressed}) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 52,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -649,7 +605,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   Widget _buildGoogleButton() {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 52,
       child: OutlinedButton.icon(
         onPressed: isLoading ? null : _signInWithGoogle,
         icon: Container(
@@ -664,17 +620,13 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         ),
         label: const Text(
           'Google ile devam et',
-          style: TextStyle(
-            fontSize: 16, 
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1F2937),
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          side: BorderSide(color: _borderColor, width: 1),
+          foregroundColor: _textColor,
+          side: BorderSide(color: _borderColor),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0,
+          backgroundColor: Colors.white,
         ),
       ),
     );
