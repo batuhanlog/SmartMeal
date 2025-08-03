@@ -1,5 +1,8 @@
 ![LOGO](https://github.com/user-attachments/assets/c72d0ed3-8d75-486a-89b0-bd855c03c557)
 
+# Uygulamaya Giriş Bilgileri 
+kullanıcı e mail : test@hotmail.com
+Şifre: test123
 
 # Takım Bilgileri 
 
