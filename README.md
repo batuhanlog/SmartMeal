@@ -11,7 +11,7 @@
 - **Gökçe Beyza Gökçek** – Scrum Master _(aktif)_  
 - **Emine Suna Yılmaz** – Developer _(aktif)_  
 - **Hasan Kılınç** – Developer _(aktif)_  
-- **Selimhan Gitmişoğlu** – Developer _(aktif)_
+- **Selimhan Gitmişoğlu** – Developer _(pasif)_
 
 ## Product Backlog URL  
 TRELLO ->   https://trello.com/invite/b/6867fded2e088c5262e56975/ATTIc3ee26c08786121322ef76a28f231160FD36EDE6/smart-meal
@@ -24,95 +24,100 @@ EXCEL SPREADSHEET ->  https://docs.google.com/spreadsheets/d/1oJFwlWX4NKyk2JQHON
 <details open>
 <summary><strong>Ürün Açıklaması</strong></summary>
 
-Günümüzde beslenme, kişisel sağlık yönetiminin temel taşlarından biri haline gelmiştir. Ancak insanlar, ellerindeki malzemelerle sağlıklı ve dengeli bir öğün hazırlamakta, ya da yediklerinin kendi sağlık verilerine uygun olup olmadığını anlamakta zorlanmaktadır.
+Günümüzde sağlıklı beslenme, bireylerin yaşam kalitesini doğrudan etkileyen temel unsurlardan biri hâline gelmiştir. Ancak çoğu insan, elindeki malzemelerle dengeli bir öğün hazırlamakta ya da tükettiği yiyeceklerin kendi sağlık ihtiyaçlarına uygunluğunu değerlendirmekte zorluk yaşamaktadır.
+SMeal, bu ihtiyaca yanıt veren, yapay zekâ destekli kişiselleştirilmiş bir çözüm sunar. Kullanıcının beslenme tipi (örneğin vegan, ketojenik), alerjileri ve hedefleri (kilo verme, kas kazanımı gibi) doğrultusunda günlük özel yemek önerileri oluşturur.
+Ayrıca kullanıcı, elinde bulunan malzemeleri yazarak veya seçerek en uygun tarifi anında öğrenebilir. Yapay zekâ destekli analiz sistemi, aynı zamanda yemek görsellerinden besin değerlerini belirleyerek içerik ve sağlık açısından değerlendirme yapar.
+Bunun yanında, haftalık sağlık soruları üzerinden çalışan erken teşhis modülü, riskli durumları analiz ederek gerektiğinde kullanıcıyı yönlendirir.
+Kullanıcıların günlük adım sayısı, su tüketimi ve antrenman verileri takip edilir ve haftalık sağlık raporlarına dönüştürülerek kişiye özel öneriler sunulur.
+Görev tamamlama ve puan sistemi ile kullanıcılar, sağlıklı alışkanlıklarını oyunlaştırılmış bir yapıyla sürdürülebilir hâle getirebilir.
+Modern ve kullanıcı dostu arayüzüyle SMeal, sağlıklı yaşam biçimini benimsemek isteyen bireyler için yalnızca bir tarif uygulaması değil; aynı zamanda günlük kararlarını destekleyen pratik bir asistan ve sürdürülebilir alışkanlıklar geliştirmeye yardımcı olan dijital bir rehber olmayı hedefler.
 
-**SMeal**, bu soruna yapay zekâ destekli kişiselleştirilmiş bir çözüm sunar.
-
-Kullanıcının beslenme tipi (örneğin vegan, ketojenik), alerjileri, sağlık hedefleri (zayıflama, kas kazanımı vb.) gibi verileri doğrultusunda, her gün kendisine özel yemek önerileri sunar.
-
-Ayrıca kullanıcı, sadece elindeki malzemeleri yazarak ya da seçerek, sistemin kendisine en uygun ve sağlıklı yemeği önermesini sağlayabilir. Yapay zekâ, görseli analiz ederek besin içeriklerini ve sağlık açısından uygunluğunu da değerlendirir.
-
-Minimalist ve kullanıcı dostu tasarımı ile SMeal, kişisel sağlıkla uyumlu bir yaşam tarzı benimsemek isteyen herkes için hem pratik bir asistan hem de motive edici bir rehber olmayı hedefler.
 
 </details>
 ---
 <details>
 <summary><strong>Ürün Özellikleri</strong></summary>
 
-### 1. Giriş Sayfası: Profil Bazlı Kişiselleştirme
+### 1. Kişiselleştirilmiş Tarif Önerileri
 
-Kullanıcılar yaş, cinsiyet, boy, kilo, aktivite seviyesi, diyet tercihi, alerjiler ve sağlık hedefleri gibi bilgileri içeren detaylı bir profil oluşturur. Uygulama bu bilgiler doğrultusunda:
-
-- Vücut kitle indeksi (BMI) hesaplaması yapar  
-- Hedef doğrultusunda kalori ve makro besin ihtiyaçlarını belirler  
-- Diyet etiketlerini oluşturur (ör. ketojenik, vegan, düşük karbonhidrat vs.)
+Kullanıcının beslenme tipi, alerjileri ve sağlık hedefleri doğrultusunda günlük olarak özel tarif önerileri sunulur.  
+Sistem, bu verileri analiz ederek dengeli ve kişiye uygun tarifleri önceliklendirir.
 
 ---
 
-### 2. Kişiselleştirilmiş Yemek Önerileri Sayfası
+### 2. Malzeme Bazlı Tarif Önerme
 
-Uygulama, kullanıcı profilindeki bilgilerle **Gemini 2.0** kullanarak öneriler üretir. Her yemek önerisi:
-
-- Toplam kalori, protein, karbonhidrat, yağ miktarı  
-- Hazırlama süresi ve zorluk seviyesi  
-- Tarifin neden uygun olduğu bilgisi  
-- Gereken tüm malzemeler ve hazırlanış adımları içerir
-
-Sistem, alerji ya da diyet dışı içerikleri filtreleyerek kişiye özel ve güvenli öneriler sunar.
+Kullanıcı elindeki malzemeleri yazarak veya seçerek, bu ürünlerle hazırlanabilecek sağlıklı tariflere ulaşabilir.  
+Bu sayede hem gıda israfı azaltılır hem de planlı beslenme kolaylaşır.
 
 ---
 
-### 3. AI ile Görsel Yemek Analizi Sayfası
+### 3. Görsel Besin Analizi
 
-Kullanıcı, yediği yemeğin fotoğrafını yükleyerek besin içerik analizi alabilir. Özellik demo aşamasında statik eşleştirme mantığıyla çalışır:
+Kullanıcı, tüketmek üzere olduğu yemeğin fotoğrafını sisteme yükleyerek:
 
-- Görsel alımı (kamera veya galeri)  
-- Görüntü sınıflandırması  
-- Kalori ve makro tahmini  
-- Kullanıcıya özel uygunluk değerlendirmesi
+- Kalori tahmini  
+- Makro besin değerleri  
+- İçerik bilgisi  
 
-Bu ekran, AI’nın temel besin tanıma gücünü deneyimletmeyi hedefler.
-
----
-
-### 4. Elimdekiler ile Tarifler Sayfası
-
-Kullanıcı elindeki malzemeleri metinle ya da butonlarla girer. Sistem, bu malzemelere göre Gemini ile tarif önerisi sunar:
-
-- Eksik malzeme durumunda uyarı verir  
-- Hazırlanabilirlik derecesini belirtir  
-- Gerekli ek malzemeleri sıralar
+gibi analiz sonuçlarını anında görebilir. Sistem, görsel tanıma teknolojisiyle yiyeceği analiz eder ve sağlık açısından değerlendirir.
 
 ---
 
-### 5. Ek Özellikler
+### 4. Erken Teşhis Desteği
 
-#### Tarif Detayları
+Kullanıcılara haftalık olarak yöneltilen sağlık soruları, yapay zekâ tarafından analiz edilir.  
+Olası riskli durumlarda (ör. kanser benzeri olasılıklar), kullanıcı bilgilendirilerek sağlık kontrolüne yönlendirilir.
 
-- Kalori, protein, karbonhidrat, yağ gibi temel besin değerleri  
-- Malzeme listesi ve ölçüleri  
-- Adım adım hazırlanış yönergeleri  
-- Kullanıcıya uygunluk açıklaması  
+---
 
-#### Geçmiş Takibi
+### 5. Su Tüketimi Takibi
 
-- Daha önce görüntülenen tariflerin otomatik saklanması  
-- Favorilere ekleme/çıkarma  
-- Filtreleme ve yeniden erişim kolaylığı  
+Kullanıcı günlük su tüketimini manuel olarak kaydedebilir.  
+Sistem bu verileri haftalık bazda analiz ederek:
 
-#### Navigasyon
+- Raporlamalar sunar  
+- Hatırlatmalar göndererek sıvı tüketiminin yeterliliğini destekler
 
-Ana sayfada modüller:
+---
 
-- Kişisel yemek önerisi  
-- Elimdeki malzemelerle tarif  
-- Yemeği analiz et  
-- Profil ve sağlık bilgileri
+### 6. Adım Sayar Entegrasyonu
 
-Tüm sayfalar arasında hızlı ve sezgisel geçiş için Flutter navigasyon sistemi kullanılmıştır.
+Kullanıcının mobil cihazından alınan günlük adım verisi ile fiziksel aktivite düzeyi takip edilir.  
+Bu bilgiler sağlık analizlerine entegre edilerek genel değerlendirmeye katkı sağlar.
 
+---
+
+### 7. Antrenman Takibi
+
+Kullanıcı yaptığı egzersizleri gün gün kaydederek:
+
+- Egzersiz geçmişini izler  
+- Düzenli aktivite alışkanlıklarını takip eder  
+- Haftalık sağlık analizlerine veri sağlar
+
+---
+
+### 8. AI Destekli Haftalık Sağlık Raporları
+
+Beslenme, aktivite, su tüketimi gibi veriler yapay zekâ tarafından haftalık olarak analiz edilir.  
+Bu analizler sonucunda:
+
+- Kullanıcıya özel sağlık raporları sunulur  
+- Alışkanlıkların etkisi görselleştirilir
+
+---
+
+### 9. Görev ve Motivasyon Sistemi
+
+Uygulama içinde günlük görevler yer alır. Kullanıcı bu görevleri tamamladıkça:
+
+- Puan ve seri kazanır  
+- Alışkanlıklarını geliştirir  
+- Oyunlaştırma sayesinde motive olur
 
 </details>
+
 
 ---- 
 # Hedef Kullanıcılar
@@ -444,9 +449,100 @@ Bunun dışında, hafta içi ekip içi iletişimi sağlamak amacıyla **WhatsApp
 Toplantı notları ve görev güncellemeleri büyük ölçüde bu çevrim içi yazışmalar aracılığıyla kayıt altına alınmıştır.
 
 📎 Toplantı notları, iletişim dökümanları ve ekran görüntüleri için:  
+👉 [Google Drive Klasörüne Buradan Ulaşabilirsiniz](https://drive.google.com/drive/u/0/folders/1mTG1E7PBTjrzAspydRxLyF_Z1yf2xqIt)
 
 
 </details>
+
+<details>
+<summary><strong>Sprint Board Updates</strong></summary>
+
+Geçtiğimiz sprintte belirlenen proje yönetim aracı **Trello**, Sprint 3 süresince de aktif şekilde kullanılmaya devam etmiştir.  
+Takım üyelerine atanan görevler, önceki sprintlerde tamamlanan işler ve mevcut ilerleme durumu bu platform üzerinden düzenli olarak takip edilmiştir.
+
+Trello'nun kullanımı, ekip içindeki görev dağılımının şeffaf bir şekilde yürütülmesini sağlamış, aynı zamanda sprint boyunca iş takibini kolaylaştırarak genel verimliliği artırmıştır.
+
+Sprint 3’e ait Trello panosunda:
+
+- **En soldaki sütunda**, bu sprint kapsamında tamamlanması hedeflenen ve tamamlanmış görevler listelenmektedir.  
+- **İkinci sütunda**, sürecin ilerleyişine bağlı olarak tamamlanması planlanan ancak henüz durumu kesinleşmemiş veya çalışmaları devam eden görevler yer almaktadır.  
+- **Üçüncü ve dördüncü sütunlar**, önceki iki sprintte başarıyla tamamlanmış görevleri içermektedir.  
+
+Bu yapı sayesinde, projenin genel ilerleyişi ve iş akışı görsel olarak kolayca takip edilebilmiştir.
+
+<img width="454" height="241" alt="image" src="https://github.com/user-attachments/assets/f36f681c-e7c1-43ef-a5db-e4a9fcbe8755" />
+
+
+</details>
+
+<details>
+<summary><strong> Sprint Katılımcıları</strong></summary>
+
+- Batuhan Kayahan – Product Owner - aktif
+- Gökçe Beyza Gökçek – Scrum Master  - aktif
+- Emine Suna Yılmaz – Developer  - aktif
+- Hasan Kılınç – Developer  - aktif
+- Selimhan Gitmişoğlu – Developer - pasif
+
+</details>
+
+<details>
+<summary><strong>Sprint Review </strong></summary>
+
+Sprint 3 sonunda proje genelinde önemli yapısal ve deneyimsel iyileştirmeler gerçekleştirildi. Bu sprintte yapılan çalışmalar şu şekilde özetlenebilir:
+
+- **Uygulamanın kullanıcı arayüzü (UI)** tamamen güncellendi. Arayüz, daha düzenli, sade ve kullanıcı dostu bir yapıya kavuşturularak kullanım kolaylığı artırıldı.
+  
+- **Yemek analiz ekranında** AI entegrasyonu güncellendi. Bu alanda yapay zekâ destekli analizlerin doğruluğu ve performansı artırıldı.
+  
+- **"Erken Tanı" sisteminde** kullanılan açılır pencere (pop-up) sorularının içerikleri yeniden düzenlendi. Soruların dil yapısı sadeleştirildi ve kullanıcı etkileşimi artırıldı.
+  
+- **Haftalık analiz ve sağlık önerileri** modülü geliştirildi. Yapay zekâdan elde edilen çıktılarla kullanıcılara kişiselleştirilmiş öneriler sunan bir yapı kuruldu.
+  
+- AI analizlerinden elde edilen verilere göre, **kişiye özel sağlık önerileri sunan bir sistem** uygulamaya entegre edildi.
+  
+- **Motivasyon bölümü** oluşturularak, kullanıcıların alışkanlıklarını takip edebileceği, sürdürebileceği ve teşvik edileceği bir yapı geliştirildi. Bu bölümde küçük çaplı **oyunlaştırmalar** ve alışkanlık puanlama sistemi entegre edildi.
+  
+- Proje geliştirme sürecinde karşılaşılan çeşitli **çökme problemleri ve teknik hatalar** giderildi.
+  
+- Özellikle **Firebase bağlantı sorunları** ve **AI entegrasyonu kaynaklı teknik problemler** analiz edilerek çözüme kavuşturuldu.
+
+<img width="454" height="270" alt="image" src="https://github.com/user-attachments/assets/322e7615-5d15-49d6-8ba3-89672e00934d" />
+
+
+</details>
+
+
+<details>
+<summary><strong> Ürün Durumu</strong></summary>
+
+Ürünümüzün güncel durumu aşağıda drive linkindeki görsellerde gösterilmektedir: 
+👉 [Google Drive Klasörüne Buradan Ulaşabilirsiniz](https://drive.google.com/drive/u/0/folders/1ohdI5zOZI0lnfVp8IUCJorSwXFueQYhH)
+
+</details>
+
+<details>
+<summary><strong>Sprint Retrospective</strong></summary>
+
+### 🔧 Zorlayıcı Noktalar
+
+- Ekip içindeki motivasyonun zaman zaman sağlanamaması, ilerlemeyi olumsuz etkiledi.
+- Takım üyelerinin farklı takvimlere sahip olması, senkronize çalışmayı zorlaştırdı.
+- Projenin temel bazı noktalarında karşılaşılan yapısal problemler, ilerleme hızının düşmesine neden oldu.
+
+### ✅ İyi Giden Noktalar
+
+- Tüm zorluklara rağmen projenin kararlılıkla tamamlanması önemli bir başarı oldu.
+- Sprint sonuna yaklaşılmış olmasına rağmen, iyileştirme önerilerinin yaratıcı biçimde devam etmesi projenin gelişimine katkı sağladı.
+- Ekip içinde yaşanan kriz anlarında, yapıcı bir iletişim dili korunarak sürecin sağlıklı ilerlemesi sağlandı.
+
+### 🧭 Alınan Kararlar
+
+- Sürecin kalan kısmında pozitif geri bildirimler alınması durumunda, daha uzun vadeli ve planlı bir proje yönetimi yaklaşımının benimsenmesi kararlaştırıldı.
+- Ekip üyelerinin projeye daha aktif katılımını teşvik edebilmek adına, fikir alışverişinin artırılacağı ve daha sık toplantı yapılacağı konusunda uzlaşıldı.
+
+</details>
+
 
 
 
