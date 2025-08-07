@@ -6,7 +6,7 @@ kullanıcı e mail : test@hotmail.com
 
 Şifre: test123
 
- [APK Drive Klasörüne Buradan Ulaşabilirsiniz](https://drive.google.com/drive/u/0/folders/1vEuc8-K1f96nQlNGwpa8vkpKmopB1cKP)
+ [APK Drive Klasörüne Buradan Ulaşabilirsiniz](https://drive.google.com/drive/folders/1_C2MfEK6JHn6R0cfiYa3oOCuzjFP0k4y?usp=drive_link)
 
 # Takım Bilgileri 
 
