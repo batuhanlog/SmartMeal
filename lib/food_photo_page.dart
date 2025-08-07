@@ -98,7 +98,9 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
         imageBytes = _imageBytes!;
       }
 
+      print('🔍 Analiz başlatılıyor...');
       final result = await _geminiService.analyzeFoodPhoto(imageBytes!);
+      print('📊 Analiz sonucu: $result');
 
       if (mounted) {
         setState(() {
@@ -118,13 +120,22 @@ class _FoodPhotoPageState extends State<FoodPhotoPage> {
             'analysis': result['analysis'] ?? 'Analiz yapılamadı',
             'suggestions': result['suggestions'] ?? ['Önerimiz bulunmuyor'],
             'analysisDate': result['analysis_date'] ?? DateTime.now().toString().split(' ')[0],
+            'error_type': result['error_type'], // Error type'ı da ekleyelim
+            'historical_info': result['historical_info'] ?? 'Tarihi bilgi mevcut değil',
+            'cultural_significance': result['cultural_significance'] ?? 'Kültürel bilgi mevcut değil',
+            'traditional_preparation': result['traditional_preparation'] ?? 'Geleneksel tarif mevcut değil',
           };
           _isAnalyzing = false;
         });
         
-        _showSuccessSnackBar('🎉 AI analizi tamamlandı!');
+        if (result['error_type'] == 'not_food') {
+          _showErrorSnackBar('❌ Bu görsel yemek içermiyor');
+        } else {
+          _showSuccessSnackBar('🎉 AI analizi tamamlandı!');
+        }
       }
     } catch (e) {
+      print('❌ Analiz hatası: $e');
       if (mounted) {
         setState(() => _isAnalyzing = false);
         _showErrorSnackBar('Analiz hatası: $e');

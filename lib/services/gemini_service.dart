@@ -97,24 +97,21 @@ Bu fotoğrafı analiz et ve şu adımları takip et:
 
 1. ÖNCE: Fotoğrafta yemek, içecek veya herhangi bir besin maddesi var mı kontrol et
 2. EĞER yemek/besin YOKSA: "is_food": false döndür
-3. EĞER yemek/besin VARSA: Detaylı analiz yap ve tarihi bilgiler ver
+3. EĞER yemek/besin VARSA: "is_food": true döndür ve detaylı analiz yap
 
 YEMEK VARSA YAPILACAKLAR:
-- Fotoğrafta gördüklerini spesifik olarak tanımla
+- Fotoğraftaki yemeği spesifik olarak tanımla
 - Yemeğin tarihsel kökenini ve kültürel önemini anlat
 - Bu yemeğin hangi ülke/bölge mutfağından geldiğini açıkla
 - Tarihte bu yemeğin nasıl ortaya çıktığını anlat
 - Geleneksel yapılış şeklini ve modern varyasyonlarını açıkla
 
-YEMEK YOKSA:
-- Sadece is_food: false döndür
-
-JSON formatında döndür:
+ÖNEMLİ: MUTLAKA bu JSON formatında döndür (başka hiçbir açıklama yazma):
 {
   "is_food": true/false,
   "food_name": "Gördüğün yemeğin spesifik adı",
   "emoji": "uygun emoji",
-  "confidence": 75,
+  "confidence": 85,
   "calories": 320,
   "protein": 25,
   "carbs": 45,
@@ -132,11 +129,14 @@ JSON formatında döndür:
   "analysis_date": "$formattedDate"
 }
 
-ÖRNEKLER:
-- Makarna: İtalyan kökenli, Marco Polo efsanesi, modern varyasyonları
-- Pilav: Orta Asya kökenli, Türk mutfağında gelişimi
-- Hummus: Orta Doğu kökenli, antik çağlardan beri tüketimi
-- Sushi: Japon kökenli, fermantasyondan modern forma evrimi
+EĞER YEMEK DEĞİLSE:
+{
+  "is_food": false,
+  "food_name": "Yemek Tespit Edilemedi",
+  "emoji": "❌",
+  "confidence": 0,
+  "analysis_date": "$formattedDate"
+}
 ''';
 
       final content = [
