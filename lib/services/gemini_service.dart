@@ -4,7 +4,7 @@ import 'dart:convert';
 
 class GeminiService {
   // Gemini API anahtarı
-  static const String _apiKey = 'AIzaSyBEH_GZMDh1XvPQUfxbwhYh76g_YaZ-LAU';
+  static const String _apiKey = 'AIzaSyCwFHmCA_uDLUQ79ifMvbrS--KZ6tUdUgc';
   
   late final GenerativeModel _model;
   late final GenerativeModel _visionModel;
